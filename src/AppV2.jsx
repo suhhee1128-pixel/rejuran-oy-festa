@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
-const imgBackground  = "http://localhost:3845/assets/8cdf6a64c10a83fee2369110cc84bb0aae7f1af2.png";
-const imgBlob        = "http://localhost:3845/assets/934fb035b7c06f909b1fab4bbc931a680abbbe82.png";
-const imgLogo        = "http://localhost:3845/assets/a9a16b5250fb45b9a070cde05a6ffdbafa091ceb.png";
-const imgMenuIcon    = "http://localhost:3845/assets/768f0190fe5b39a8e15ddf60eedd1237ddf04ad5.svg";
-const imgChatIcon    = "http://localhost:3845/assets/a4e816492b876cb7272b3f0ac398c1c88bced79d.svg";
-const imgScienceFilled = "http://localhost:3845/assets/d842d4423741d15ce30b0173c045a149d982d799.svg";
-const imgScience     = "http://localhost:3845/assets/ae8ec052f2ca05deb340be7de34f373cacc6ef9a.svg";
-const imgDecoImage   = "http://localhost:3845/assets/b31cac66754f48099895478c853c48af473b6f5b.png";
-const imgEllipse     = "http://localhost:3845/assets/5966db0d7526abfdd110ef114547b34d9239a274.svg";
+const imgBackground  = "/bg_figma.png";
+const imgBlob        = "/blob.png";
+const imgLogo        = "/logo.png";
+const imgMenuIcon    = "/icon_menu.svg";
+const imgChatIcon    = "/icon_chat.svg";
+const imgScienceFilled = "/icon_science_filled.svg";
+const imgScience     = "/icon_science.svg";
+const imgDecoImage   = "/deco.png";
+const imgEllipse     = "/ellipse.svg";
 
 /* ── Result screen assets ── */
 
