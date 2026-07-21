@@ -556,7 +556,7 @@ function Quiz3Screen({ concern, onBack, onNext }) {
 /* ── Home Screen ── */
 function HomeScreen({ onNavigate, onResult }) {
   return (
-    <>
+    <section className="v2-home-screen">
       <InteractiveBackground origin="home" />
       <Header />
 
@@ -579,8 +579,8 @@ function HomeScreen({ onNavigate, onResult }) {
       </div>
 
       <div className="v2-greeting">
-        <p>Hi!</p>
-        <p>How's it going?</p>
+        <p className="v2-greeting-line v2-greeting-line-1">Hi!</p>
+        <p className="v2-greeting-line v2-greeting-line-2">How's it going?</p>
       </div>
 
       <div className="v2-suggestions">
@@ -602,7 +602,7 @@ function HomeScreen({ onNavigate, onResult }) {
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
       </div>
-    </>
+    </section>
   );
 }
 
