@@ -27,6 +27,7 @@
 :root {
   --anim--hover-time: 400ms;
   --anim--hover-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --v2-safe-x: 69px;
   font-family: "Inter", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   color: #1f2937;
@@ -348,7 +349,6 @@ body {
   object-fit: contain;
   animation: v2-blob-soft-float 3.4s ease-in-out infinite;
   pointer-events: none;
-  mix-blend-mode: screen;
 }
 
 .v2-greeting {
@@ -937,8 +937,8 @@ body {
   pointer-events: none;
 }
 
-.v2-deco-left  { left: 84px; }
-.v2-deco-right { left: 981px; }
+.v2-deco-left  { left: var(--v2-safe-x); }
+.v2-deco-right { right: var(--v2-safe-x); }
 
 .v2-deco img {
   width: 100%;
@@ -974,18 +974,18 @@ body {
 }
 
 .v2-bubble-user {
-  right: 45px;
+  right: var(--v2-safe-x);
   top: 439px;
   width: fit-content;
-  max-width: calc(1080px - 90px);
+  max-width: calc(1080px - var(--v2-safe-x) - var(--v2-safe-x));
   white-space: normal;
   word-break: keep-all;
   text-align: left;
 }
 
 .v2-bubble-answer {
-  left: 45px;
-  right: 45px;
+  left: var(--v2-safe-x);
+  right: var(--v2-safe-x);
   width: auto;
   top: 612px;
   height: auto;
@@ -999,12 +999,16 @@ body {
   justify-content: flex-start;
 }
 
+.v2-chat-answer {
+  right: 220px;
+}
+
 .v2-bubble-answer p {
   margin: 0;
 }
 
 .v2-bubble-typing {
-  left: 45px;
+  left: var(--v2-safe-x);
   top: 612px;
   width: 200px;
   height: 96px;
@@ -1034,7 +1038,7 @@ body {
 /* Next button */
 .v2-next-btn {
   position: absolute;
-  right: 46px;
+  right: var(--v2-safe-x);
   bottom: 220px;
   background: #1EA29E;
   color: #fff;
@@ -1056,7 +1060,7 @@ body {
 /* Great screen */
 .v2-great-text {
   position: absolute;
-  top: 799px;
+  top: 848px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -1065,11 +1069,17 @@ body {
 }
 
 .v2-great-title {
-  margin: 0 0 24px;
+  margin: 0;
   font-family: "Pretendard", sans-serif;
   font-weight: 500;
   font-size: 56px;
   color: #000;
+  line-height: 1.35;
+}
+
+.v2-great-first-line {
+  display: inline-block;
+  margin-bottom: 18px;
 }
 
 .v2-great-sub {
@@ -1111,7 +1121,6 @@ body {
   z-index: 10;
   pointer-events: none;
   object-fit: contain;
-  mix-blend-mode: screen;
   animation: v2-blob-soft-float 3.4s ease-in-out infinite;
   transition:
     top  0.65s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1141,7 +1150,7 @@ body {
   position: absolute;
   top: 609px;
   left: 107px;
-  right: 45px;
+  right: var(--v2-safe-x);
   z-index: 2;
   opacity: 0;
   transform: translateY(16px);
@@ -1190,10 +1199,10 @@ body {
 
 /* Concern options — single column, right-aligned */
 .v2-concern-grid {
-  top: 1000px !important;
-  grid-template-columns: 1fr !important;
-  row-gap: 36px !important;
-  width: 620px !important;
+  top: 990px !important;
+  row-gap: 42px !important;
+  width: max-content !important;
+  max-width: calc(1080px - var(--v2-safe-x) - var(--v2-safe-x));
 }
 
 .v2-concern-grid .v2-quiz-opt {
@@ -1203,19 +1212,19 @@ body {
 }
 
 .v2-concern-actions {
-  top: 1640px !important;
+  top: 1710px !important;
 }
 
-/* 2-column option grid — right-aligned (user choices) */
+/* Option grid — right-aligned like chat choices */
 .v2-quiz-grid {
   position: absolute;
-  top: 930px;
-  right: 45px;
-  width: 560px;
+  top: 900px;
+  right: calc(var(--v2-safe-x) + 30px);
+  width: max-content;
+  max-width: calc(1080px - var(--v2-safe-x) - var(--v2-safe-x));
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 60px;
-  column-gap: 0;
+  grid-template-columns: 1fr;
+  row-gap: 42px;
   z-index: 2;
 }
 
@@ -1224,6 +1233,9 @@ body {
   display: flex;
   align-items: center;
   gap: 17px;
+  width: 100%;
+  max-width: 100%;
+  justify-self: stretch;
   background: none;
   border: none;
   cursor: pointer;
@@ -1234,6 +1246,7 @@ body {
   color: #000;
   text-align: left;
   white-space: nowrap;
+  justify-content: flex-start;
   opacity: 0;
   transform: translateY(14px);
   pointer-events: none;
@@ -1249,6 +1262,8 @@ body {
 .v2-quiz-opt-selected span:last-child {
   color: #1EA29E;
   font-weight: 600;
+  transform: scale(1.04);
+  transform-origin: left center;
 }
 
 .v2-quiz-radio {
@@ -1270,9 +1285,9 @@ body {
 /* Back / Next row */
 .v2-quiz-actions {
   position: absolute;
-  top: 1350px;
-  left: 45px;
-  right: 45px;
+  top: 1570px;
+  left: var(--v2-safe-x);
+  right: var(--v2-safe-x);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1334,10 +1349,10 @@ body {
 
 /* ── Analyzing Screen ── */
 
-/* 3 bouncing dots above blob */
+/* 3 bouncing dots below blob */
 .v2-analyzing-dots {
   position: absolute;
-  top: 572px;
+  top: 820px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1349,7 +1364,7 @@ body {
 /* Blob in analyzing screen — large, centered */
 .v2-analyzing-blob {
   position: absolute;
-  top: 624px;
+  top: 548px;
   left: 50%;
   transform: translateX(-50%);
   width: 257px;
@@ -1363,7 +1378,6 @@ body {
   height: 100%;
   object-fit: contain;
   pointer-events: none;
-  mix-blend-mode: screen;
 }
 
 @keyframes v2-blob-float {
@@ -1424,7 +1438,9 @@ body {
   top: -18.81%;
   object-fit: contain;
   pointer-events: none;
-  mix-blend-mode: screen;
+}
+
+.rs-blob-clip video {
   transform: scale(0.85);
   transform-origin: center center;
 }
@@ -1455,7 +1471,7 @@ body {
 /* ── product image wrapper ── */
 .rs-product-area {
   position: absolute;
-  top: 360px;
+  top: 400px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 4;
@@ -1475,10 +1491,10 @@ body {
 /* ── product name ── */
 .rs-product-name {
   position: absolute;
-  top: 920px;
+  top: 960px;
   left: 50%;
   transform: translateX(-50%);
-  width: 960px;
+  width: calc(1080px - var(--v2-safe-x) - var(--v2-safe-x));
   font-family: 'Quiche Sans', serif;
   font-size: 48px;
   font-weight: 500;
@@ -1494,7 +1510,7 @@ body {
 /* ── description ── */
 .rs-product-desc {
   position: absolute;
-  top: 1000px;
+  top: 1040px;
   left: 50%;
   transform: translateX(-50%);
   width: 931px;
@@ -1511,7 +1527,7 @@ body {
 /* ── Lifestyle image ── */
 .rs-lifestyle-img {
   position: absolute;
-  top: 1180px;
+  top: 1160px;
   left: 50%;
   transform: translateX(-50%);
   width: 840px;
@@ -1525,7 +1541,7 @@ body {
 .rs-next-btn {
   position: absolute;
   bottom: 180px;
-  right: 60px;
+  right: var(--v2-safe-x);
   width: 110px;
   height: 110px;
   border-radius: 50%;
@@ -1563,7 +1579,6 @@ body {
   top: -18.81%;
   object-fit: contain;
   pointer-events: none;
-  mix-blend-mode: screen;
 }
 
 .gb-line1 {

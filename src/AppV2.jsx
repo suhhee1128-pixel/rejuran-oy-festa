@@ -120,7 +120,7 @@ function ChatScreen({ question, answer, onBack, onNext }) {
           <span className="v2-dot" />
         </div>
       ) : (
-        <div className="v2-bubble v2-bubble-answer">
+        <div className="v2-bubble v2-bubble-answer v2-chat-answer">
           {displayed}
           {!done && <span className="v2-cursor" />}
         </div>
@@ -156,8 +156,13 @@ function GreatScreen({ onOk }) {
       {/* blob rendered by shared layer in AppV2 */}
 
       <div className="v2-great-text">
-        <p className="v2-great-title">Great</p>
-        <p className="v2-great-sub">Now let's find your<br />perfect match together!</p>
+        <p className="v2-great-title">
+          <span className="v2-great-first-line">Great!</span>
+          <br />
+          Now let&apos;s find your
+          <br />
+          perfect match together!
+        </p>
       </div>
 
       <button type="button" className="v2-ok-btn" onClick={onOk}>
@@ -641,7 +646,7 @@ function ResultScreen({ product, onRestart, onNext }) {
 
       {/* Blob + speech bubble */}
       <div className="rs-blob-clip">
-        <BlobMedia />
+        <img src={imgBlob} alt="" />
       </div>
       <div className="rs-speech-wrap">
         <span className="rs-speech-text">Here's your match!</span>
