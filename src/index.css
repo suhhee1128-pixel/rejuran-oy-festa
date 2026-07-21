@@ -90,6 +90,11 @@ body {
   --wave-y: 522px;
 }
 
+.v2-fluid-bg--center {
+  --wave-x: 540px;
+  --wave-y: 960px;
+}
+
 .v2-fluid-bg--analyzing {
   --wave-x: 540px;
   --wave-y: 755px;

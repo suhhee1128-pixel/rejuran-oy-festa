@@ -12,18 +12,22 @@ const imgEllipse     = "/ellipse.svg";
 
 /* ── Result screen assets ── */
 
-function InteractiveBackground({ chat = false, origin = "home" }) {
+function InteractiveBackground({ chat = false, origin = "home", still = false }) {
   return (
     <div
-      className={`v2-fluid-bg v2-fluid-bg--${origin}${chat ? " v2-fluid-bg-chat" : ""}`}
+      className={`v2-fluid-bg v2-fluid-bg--${origin}${chat ? " v2-fluid-bg-chat" : ""}${still ? " v2-fluid-bg--still" : ""}`}
       aria-hidden="true"
     >
       <img className={`v2-bg${chat ? " v2-bg-chat" : ""}`} src={imgBackground} alt="" />
-      <div className="v2-fluid-sheen" />
-      <span className="v2-idle-wave v2-idle-wave-1" />
-      <span className="v2-idle-wave v2-idle-wave-2" />
-      <span className="v2-idle-wave v2-idle-wave-3" />
-      <span className="v2-idle-wave v2-idle-wave-4" />
+      {!still && (
+        <>
+          <div className="v2-fluid-sheen" />
+          <span className="v2-idle-wave v2-idle-wave-1" />
+          <span className="v2-idle-wave v2-idle-wave-2" />
+          <span className="v2-idle-wave v2-idle-wave-3" />
+          <span className="v2-idle-wave v2-idle-wave-4" />
+        </>
+      )}
     </div>
   );
 }
@@ -78,7 +82,7 @@ function ChatScreen({ question, answer, onBack, onNext }) {
 
   return (
     <>
-      <InteractiveBackground chat />
+      <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
 
       <div className="v2-deco v2-deco-left">
@@ -190,7 +194,7 @@ function SkinTypeScreen({ onNext, onBack }) {
 
   return (
     <>
-      <InteractiveBackground chat origin="quiz" />
+      <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
 
       {/* blob handled by shared layer in AppV2 */}
@@ -331,7 +335,7 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
 
   return (
     <>
-      <InteractiveBackground chat />
+      <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
 
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
@@ -469,7 +473,7 @@ function Quiz3Screen({ concern, onBack, onNext }) {
 
   return (
     <>
-      <InteractiveBackground chat />
+      <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
@@ -614,7 +618,7 @@ function ResultScreen({ product, onRestart, onNext }) {
 
   return (
     <>
-      <InteractiveBackground origin="result" />
+      <InteractiveBackground origin="result" still />
 
       <Header onBack={null} />
 
