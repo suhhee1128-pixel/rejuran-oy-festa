@@ -102,8 +102,8 @@ body {
 }
 
 .v2-fluid-bg--result {
-  --wave-x: 160px;
-  --wave-y: 329px;
+  --wave-x: 540px;
+  --wave-y: 670px;
 }
 
 .v2-fluid-bg--goodbye {
@@ -1419,6 +1419,69 @@ body {
    Result Screen  (rs- prefix, Figma 1080×1920)
    ══════════════════════════════════════════ */
 
+.rs-page {
+  --rs-product-top: 408px;
+  --rs-product-width: 540px;
+  --rs-product-height: 540px;
+  --rs-product-shift-x: 0px;
+  --rs-name-top: 960px;
+  --rs-name-font-size: 48px;
+  --rs-name-width: calc(1080px - var(--v2-safe-x) - var(--v2-safe-x));
+  --rs-desc-top: 1040px;
+  --rs-desc-width: 931px;
+  --rs-desc-font-size: 28px;
+  --rs-lifestyle-top: 1160px;
+  --rs-lifestyle-width: 840px;
+  --rs-lifestyle-max-height: 560px;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.rs-turnover {
+  --rs-product-top: 400px;
+  --rs-product-width: 540px;
+  --rs-product-height: 540px;
+  --rs-product-shift-x: 18px;
+  --rs-name-top: 960px;
+  --rs-desc-top: 1040px;
+  --rs-lifestyle-top: 1180px;
+}
+
+.rs-dual-effect {
+  --rs-product-top: 370px;
+  --rs-product-width: 540px;
+  --rs-product-height: 540px;
+  --rs-product-shift-x: 24px;
+  --rs-name-top: 930px;
+  --rs-desc-top: 1010px;
+  --rs-lifestyle-top: 1160px;
+}
+
+.rs-pore {
+  --rs-product-top: 390px;
+  --rs-product-width: 520px;
+  --rs-product-height: 520px;
+  --rs-product-shift-x: 32px;
+  --rs-name-top: 950px;
+  --rs-desc-top: 1030px;
+  --rs-lifestyle-top: 1150px;
+  --rs-lifestyle-width: 860px;
+  --rs-lifestyle-max-height: 570px;
+}
+
+.rs-moisture {
+  --rs-product-top: 408px;
+  --rs-product-width: 520px;
+  --rs-product-height: 520px;
+  --rs-product-shift-x: 24px;
+  --rs-name-top: 950px;
+  --rs-desc-top: 1030px;
+  --rs-lifestyle-top: 1180px;
+  --rs-lifestyle-width: 840px;
+  --rs-lifestyle-max-height: 570px;
+}
+
 /* ── blob (small, top-left) ── */
 .rs-blob-clip {
   position: absolute;
@@ -1426,23 +1489,16 @@ body {
   left: calc(50% - 440px);
   width: 120px;
   height: 122px;
-  overflow: hidden;
   z-index: 5;
 }
 .rs-blob-clip img,
 .rs-blob-clip video {
   position: absolute;
-  width: 177.04%;
-  height: 128.81%;
-  left: -37.74%;
-  top: -18.81%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   pointer-events: none;
-}
-
-.rs-blob-clip video {
-  transform: scale(0.85);
-  transform-origin: center center;
 }
 
 /* ── speech bubble (reuses v2-bubble style) ── */
@@ -1471,12 +1527,12 @@ body {
 /* ── product image wrapper ── */
 .rs-product-area {
   position: absolute;
-  top: 400px;
+  top: var(--rs-product-top);
   left: 50%;
   transform: translateX(-50%);
   z-index: 4;
-  width: 540px;
-  height: 540px;
+  width: var(--rs-product-width);
+  height: var(--rs-product-height);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1486,17 +1542,18 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  transform: translateX(var(--rs-product-shift-x));
 }
 
 /* ── product name ── */
 .rs-product-name {
   position: absolute;
-  top: 960px;
+  top: var(--rs-name-top);
   left: 50%;
   transform: translateX(-50%);
-  width: calc(1080px - var(--v2-safe-x) - var(--v2-safe-x));
+  width: var(--rs-name-width);
   font-family: 'Quiche Sans', serif;
-  font-size: 48px;
+  font-size: var(--rs-name-font-size);
   font-weight: 500;
   font-style: normal;
   color: #000;
@@ -1510,12 +1567,12 @@ body {
 /* ── description ── */
 .rs-product-desc {
   position: absolute;
-  top: 1040px;
+  top: var(--rs-desc-top);
   left: 50%;
   transform: translateX(-50%);
-  width: 931px;
+  width: var(--rs-desc-width);
   font-family: 'Pretendard', sans-serif;
-  font-size: 28px;
+  font-size: var(--rs-desc-font-size);
   font-weight: 400;
   color: #000;
   text-align: center;
@@ -1527,11 +1584,11 @@ body {
 /* ── Lifestyle image ── */
 .rs-lifestyle-img {
   position: absolute;
-  top: 1160px;
+  top: var(--rs-lifestyle-top);
   left: 50%;
   transform: translateX(-50%);
-  width: 840px;
-  max-height: 560px;
+  width: var(--rs-lifestyle-width);
+  max-height: var(--rs-lifestyle-max-height);
   object-fit: contain;
   object-position: top;
   z-index: 5;

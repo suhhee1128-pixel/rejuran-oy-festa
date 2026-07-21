@@ -610,24 +610,28 @@ function HomeScreen({ onNavigate, onResult }) {
 const PRODUCT_DATA = {
   "Turnover Ampoule": {
     name: "TURNOVER AMPOULE",
+    resultClass: "rs-turnover",
     image: "/turnover02.png",
     desc: "A youthful glow with c-PDRN®, a marine-based growth factor that helps improve the appearance of skin's tone, texture, and radiance.",
     lifestyle: "/turnover01.png",
   },
   "Dual Effect Ampoule": {
     name: "DUAL EFFECT AMPOULE",
+    resultClass: "rs-dual-effect",
     image: "/dualeffect02.png",
     desc: "Firmer, smoother-looking skin with c-PDRN®, an advanced skin-renewing ingredient that helps improve the appearance of elasticity, texture, and overall radiance.",
     lifestyle: "/dualeffect01.png",
   },
   "Pore Tightening Ampoule": {
     name: "PORE TIGHTENING AMPOULE",
+    resultClass: "rs-pore",
     image: "/pore02.png",
     desc: "Refine the look of pores and achieve a smoother, more balanced complexion with Pore Tightening Ampoule.",
     lifestyle: "/pore01.png",
   },
   "Moisture Treatment Ampoule": {
     name: "MOISTURE TREATMENT AMPOULE",
+    resultClass: "rs-moisture",
     image: "/moisture02.png",
     desc: "Restore calm, deeply hydrated skin with Moisture Treatment Ampoule, a soothing hydrating serum designed to support the skin barrier, calm visible redness.",
     lifestyle: "/moisture01.png",
@@ -640,39 +644,41 @@ function ResultScreen({ product, onRestart, onNext }) {
 
   return (
     <>
-      <InteractiveBackground origin="result" still />
+      <InteractiveBackground origin="result" />
 
-      <Header onBack={null} />
+      <section className={`rs-page ${data.resultClass}`}>
+        <Header onBack={null} />
 
-      {/* Blob + speech bubble */}
-      <div className="rs-blob-clip">
-        <img src={imgBlob} alt="" />
-      </div>
-      <div className="rs-speech-wrap">
-        <span className="rs-speech-text">Here's your match!</span>
-      </div>
+        {/* Blob + speech bubble */}
+        <div className="rs-blob-clip">
+          <BlobMedia />
+        </div>
+        <div className="rs-speech-wrap">
+          <span className="rs-speech-text">Here's your match!</span>
+        </div>
 
-      {/* Product image */}
-      <div className="rs-product-area">
-        <img src={data.image} alt={data.name} className="rs-product-img" />
-      </div>
+        {/* Product image */}
+        <div className="rs-product-area">
+          <img src={data.image} alt={data.name} className="rs-product-img" />
+        </div>
 
-      {/* Product name */}
-      <p className="rs-product-name">{data.name}</p>
+        {/* Product name */}
+        <p className="rs-product-name">{data.name}</p>
 
-      {/* Description */}
-      <p className="rs-product-desc">{data.desc}</p>
+        {/* Description */}
+        <p className="rs-product-desc">{data.desc}</p>
 
-      {/* Lifestyle image */}
-      <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
+        {/* Lifestyle image */}
+        <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
 
-      {/* Next arrow button */}
-      <button className="rs-next-btn" onClick={onNext}>›</button>
+        {/* Next arrow button */}
+        <button className="rs-next-btn" onClick={onNext}>›</button>
 
-      {/* Logo */}
-      <div className="v2-logo-wrap">
-        <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
-      </div>
+        {/* Logo */}
+        <div className="v2-logo-wrap">
+          <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
+        </div>
+      </section>
     </>
   );
 }
