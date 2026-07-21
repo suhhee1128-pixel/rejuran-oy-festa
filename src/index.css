@@ -74,6 +74,156 @@ body {
   pointer-events: none;
 }
 
+.v2-fluid-bg {
+  --wave-x: 540px;
+  --wave-y: 672px;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.v2-fluid-bg--quiz {
+  --wave-x: 167px;
+  --wave-y: 522px;
+}
+
+.v2-fluid-bg--analyzing {
+  --wave-x: 540px;
+  --wave-y: 755px;
+}
+
+.v2-fluid-bg--result {
+  --wave-x: 160px;
+  --wave-y: 329px;
+}
+
+.v2-fluid-bg--goodbye {
+  --wave-x: 540px;
+  --wave-y: 767px;
+}
+
+.v2-fluid-bg .v2-bg {
+  transform: none;
+  filter: none;
+}
+
+.v2-fluid-sheen {
+  position: absolute;
+  inset: -12%;
+  z-index: 1;
+  opacity: 0.24;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 34%, rgba(255,255,255,0.68), rgba(204,242,238,0.18) 26%, rgba(255,255,255,0) 58%);
+  animation: v2-fluid-breathe 8s ease-in-out infinite;
+}
+
+@keyframes v2-fluid-breathe {
+  0%, 100% { transform: scale(1); filter: blur(12px); }
+  50%      { transform: scale(1.035); filter: blur(18px); }
+}
+
+.v2-idle-wave {
+  position: absolute;
+  left: var(--wave-x);
+  top: var(--wave-y);
+  z-index: 2;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,0) 0 24%,
+      rgba(255,255,255,0.18) 42%,
+      rgba(174,255,247,0.16) 58%,
+      rgba(30,162,158,0.08) 72%,
+      rgba(255,255,255,0) 100%
+    ),
+    radial-gradient(
+      circle,
+      rgba(255,255,255,0.16) 0 18%,
+      rgba(214,255,250,0.08) 38%,
+      rgba(255,255,255,0) 70%
+    );
+  box-shadow:
+    0 0 96px rgba(255,255,255,0.22),
+    inset 0 0 72px rgba(255,255,255,0.14);
+  filter: blur(18px);
+  backdrop-filter: saturate(1.18) brightness(1.02);
+  -webkit-backdrop-filter: saturate(1.18) brightness(1.02);
+  animation: v2-idle-wave-out 6.8s cubic-bezier(0.18, 0.72, 0.18, 1) infinite;
+}
+
+.v2-idle-wave::before,
+.v2-idle-wave::after {
+  content: "";
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
+  border: 26px solid rgba(255,255,255,0.08);
+  opacity: 0.62;
+  filter: blur(18px);
+}
+
+.v2-idle-wave::after {
+  inset: 30%;
+  border-width: 34px;
+  border-color: rgba(138,255,244,0.07);
+  animation: v2-idle-wave-inner 6.8s cubic-bezier(0.2, 0.72, 0.2, 1) infinite;
+}
+
+.v2-idle-wave-1 { animation-delay: 0s; }
+.v2-idle-wave-1::after { animation-delay: 0s; }
+.v2-idle-wave-2 { animation-delay: -1.7s; }
+.v2-idle-wave-2::after { animation-delay: -1.7s; }
+.v2-idle-wave-3 { animation-delay: -3.4s; }
+.v2-idle-wave-3::after { animation-delay: -3.4s; }
+.v2-idle-wave-4 { animation-delay: -5.1s; }
+.v2-idle-wave-4::after { animation-delay: -5.1s; }
+
+@keyframes v2-idle-wave-out {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.22);
+    filter: blur(22px);
+  }
+  12% {
+    opacity: 0.36;
+  }
+  48% {
+    opacity: 0.22;
+    transform: translate(-50%, -50%) scale(4.2);
+    filter: blur(28px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(8.8);
+    filter: blur(42px);
+  }
+}
+
+@keyframes v2-idle-wave-inner {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.42;
+  }
+  100% {
+    transform: scale(2.45);
+    opacity: 0;
+  }
+}
+
 .v2-header {
   position: absolute;
   top: 62px;
@@ -180,6 +330,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  animation: v2-blob-soft-float 3.4s ease-in-out infinite;
 }
 
 .v2-greeting {
@@ -942,6 +1093,7 @@ body {
   z-index: 10;
   pointer-events: none;
   object-fit: contain;
+  animation: v2-blob-soft-float 3.4s ease-in-out infinite;
   transition:
     top  0.65s cubic-bezier(0.4, 0, 0.2, 1),
     left 0.65s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1184,7 +1336,7 @@ body {
   width: 257px;
   height: 261px;
   z-index: 4;
-  animation: v2-blob-float 2.6s ease-in-out infinite;
+  animation: v2-blob-float 3.4s ease-in-out infinite;
 }
 .v2-analyzing-blob img {
   width: 100%;
@@ -1194,7 +1346,12 @@ body {
 
 @keyframes v2-blob-float {
   0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(-18px); }
+  50%       { transform: translateX(-50%) translateY(-15px); }
+}
+
+@keyframes v2-blob-soft-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-15px); }
 }
 
 .v2-analyzing-text {
@@ -1367,7 +1524,7 @@ body {
   height: 261px;
   overflow: hidden;
   z-index: 4;
-  animation: v2-blob-float 2.6s ease-in-out infinite;
+  animation: v2-blob-float 3.4s ease-in-out infinite;
 }
 .gb-blob-wrap img {
   position: absolute;
