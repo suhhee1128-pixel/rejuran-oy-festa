@@ -115,6 +115,17 @@ body {
   filter: none;
 }
 
+.blob-video {
+  -webkit-mask-image: url("/blob.png");
+  mask-image: url("/blob.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 150% 114%;
+  mask-size: 150% 114%;
+}
+
 .v2-fluid-sheen {
   position: absolute;
   inset: -12%;
@@ -336,6 +347,8 @@ body {
   height: 100%;
   object-fit: contain;
   animation: v2-blob-soft-float 3.4s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .v2-greeting {
@@ -1098,6 +1111,7 @@ body {
   z-index: 10;
   pointer-events: none;
   object-fit: contain;
+  mix-blend-mode: screen;
   animation: v2-blob-soft-float 3.4s ease-in-out infinite;
   transition:
     top  0.65s cubic-bezier(0.4, 0, 0.2, 1),
@@ -1343,20 +1357,23 @@ body {
   z-index: 4;
   animation: v2-blob-float 3.4s ease-in-out infinite;
 }
-.v2-analyzing-blob img {
+.v2-analyzing-blob img,
+.v2-analyzing-blob video {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 @keyframes v2-blob-float {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(-15px); }
+  0%, 100% { transform: translateX(-50%) translateY(0) scale(0.85); }
+  50%       { transform: translateX(-50%) translateY(-15px) scale(0.85); }
 }
 
 @keyframes v2-blob-soft-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-15px); }
+  0%, 100% { transform: translateY(0) scale(0.85); }
+  50%      { transform: translateY(-15px) scale(0.85); }
 }
 
 .v2-analyzing-text {
@@ -1398,12 +1415,18 @@ body {
   overflow: hidden;
   z-index: 5;
 }
-.rs-blob-clip img {
+.rs-blob-clip img,
+.rs-blob-clip video {
   position: absolute;
   width: 177.04%;
   height: 128.81%;
   left: -37.74%;
   top: -18.81%;
+  object-fit: contain;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transform: scale(0.85);
+  transform-origin: center center;
 }
 
 /* ── speech bubble (reuses v2-bubble style) ── */
@@ -1531,12 +1554,16 @@ body {
   z-index: 4;
   animation: v2-blob-float 3.4s ease-in-out infinite;
 }
-.gb-blob-wrap img {
+.gb-blob-wrap img,
+.gb-blob-wrap video {
   position: absolute;
   width: 177.04%;
   height: 128.81%;
   left: -37.74%;
   top: -18.81%;
+  object-fit: contain;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .gb-line1 {

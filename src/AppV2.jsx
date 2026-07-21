@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const imgBackground  = "/bg_figma.png";
 const imgBlob        = "/blob.png";
+const videoBlob      = "/blob-blinking.mp4";
 const imgLogo        = "/logo.png";
 const imgMenuIcon    = "/icon_menu.svg";
 const imgChatIcon    = "/icon_chat.svg";
@@ -29,6 +30,22 @@ function InteractiveBackground({ chat = false, origin = "home", still = false })
         </>
       )}
     </div>
+  );
+}
+
+function BlobMedia({ className = "", alt = "" }) {
+  return (
+    <video
+      className={`blob-video${className ? ` ${className}` : ""}`}
+      src={videoBlob}
+      poster={imgBlob}
+      aria-label={alt}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+    />
   );
 }
 
@@ -416,7 +433,7 @@ function AnalyzingScreen({ onDone }) {
 
       {/* Large centered blob */}
       <div className="v2-analyzing-blob">
-        <img src={imgBlob} alt="REJURAN character" />
+        <BlobMedia alt="REJURAN character" />
       </div>
 
       {/* Text */}
@@ -553,7 +570,7 @@ function HomeScreen({ onNavigate, onResult }) {
       </div>
 
       <div className="v2-blob-wrap">
-        <img src={imgBlob} alt="REJURAN character" className="v2-blob" />
+        <BlobMedia className="v2-blob" alt="REJURAN character" />
       </div>
 
       <div className="v2-greeting">
@@ -624,7 +641,7 @@ function ResultScreen({ product, onRestart, onNext }) {
 
       {/* Blob + speech bubble */}
       <div className="rs-blob-clip">
-        <img src={imgBlob} alt="" />
+        <BlobMedia />
       </div>
       <div className="rs-speech-wrap">
         <span className="rs-speech-text">Here's your match!</span>
@@ -664,7 +681,7 @@ function GoodbyeScreen({ onHome }) {
 
       {/* Large centered blob */}
       <div className="gb-blob-wrap">
-        <img src={imgBlob} alt="" />
+        <BlobMedia />
       </div>
 
       {/* Text */}
@@ -764,9 +781,7 @@ function AppV2() {
 
         {/* Shared blob — blobPos lags one frame behind screen so transition always plays */}
         {showBlob && (
-          <img
-            src={imgBlob}
-            alt=""
+          <BlobMedia
             className={`v2-shared-blob v2-shared-blob--${blobPos}`}
           />
         )}
