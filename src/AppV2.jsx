@@ -110,7 +110,9 @@ function ChatScreen({ question, answer, onBack, onNext }) {
         <img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} />
       </div>
 
-      <img src={imgScience} alt="" className="v2-chat-science-icon" />
+      <div className="v2-chat-blob-wrap">
+        <BlobMedia alt="REJURAN character" />
+      </div>
 
       <div className="v2-bubble v2-bubble-user">{question}</div>
 
@@ -363,7 +365,9 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
 
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
-      <img src={imgScience} alt="" className="v2-chat-science-icon" />
+      <div className="v2-chat-blob-wrap">
+        <BlobMedia alt="REJURAN character" />
+      </div>
 
       {/* User's previous answer */}
       <div className="v2-bubble v2-bubble-user">{skinType}</div>
@@ -500,7 +504,9 @@ function Quiz3Screen({ concern, onBack, onNext }) {
       <Header onBack={onBack} />
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
-      <img src={imgScience} alt="" className="v2-chat-science-icon" />
+      <div className="v2-chat-blob-wrap">
+        <BlobMedia alt="REJURAN character" />
+      </div>
 
       {/* User's concern answer */}
       <div className="v2-bubble v2-bubble-user">{concern}</div>
