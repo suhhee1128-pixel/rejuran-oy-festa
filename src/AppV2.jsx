@@ -13,10 +13,11 @@ const imgEllipse     = "/ellipse.svg";
 
 /* ── Result screen assets ── */
 
-function InteractiveBackground({ chat = false, origin = "home", still = false }) {
+function InteractiveBackground({ chat = false, origin = "home", still = false, style }) {
   return (
     <div
       className={`v2-fluid-bg v2-fluid-bg--${origin}${chat ? " v2-fluid-bg-chat" : ""}${still ? " v2-fluid-bg--still" : ""}`}
+      style={style}
       aria-hidden="true"
     >
       <img className={`v2-bg${chat ? " v2-bg-chat" : ""}`} src={imgBackground} alt="" />
@@ -612,7 +613,14 @@ const PRODUCT_DATA = {
     name: "TURNOVER AMPOULE",
     resultClass: "rs-turnover",
     image: "/turnover02.png",
-    desc: "A youthful glow with c-PDRN®, a marine-based growth factor that helps improve the appearance of skin's tone, texture, and radiance.",
+    descLines: [
+      "A youthful glow with c-PDRN®, a marine-based",
+      "growth factor that helps improve the appearance of",
+      "skin's tone, texture, and radiance.",
+    ],
+    waveX: "558px",
+    waveY: "800px",
+    nextLabel: "Next",
     lifestyle: "/turnover01.png",
   },
   "Dual Effect Ampoule": {
@@ -641,38 +649,70 @@ const PRODUCT_DATA = {
 /* ── Result Screen ── */
 function ResultScreen({ product, onRestart, onNext }) {
   const data = PRODUCT_DATA[product] || PRODUCT_DATA["Turnover Ampoule"];
+  const [hasScrolledResult, setHasScrolledResult] = useState(false);
+
+  useEffect(() => {
+    setHasScrolledResult(false);
+  }, [product]);
 
   return (
     <>
-      <InteractiveBackground origin="result" />
+      <InteractiveBackground
+        origin="result"
+        style={{
+          "--wave-x": data.waveX,
+          "--wave-y": data.waveY,
+        }}
+      />
 
       <section className={`rs-page ${data.resultClass}`}>
         <Header onBack={null} />
 
-        {/* Blob + speech bubble */}
-        <div className="rs-blob-clip">
-          <BlobMedia />
+        <div
+          className="rs-result-scroll"
+          onScroll={(event) => setHasScrolledResult(event.currentTarget.scrollTop > 12)}
+        >
+          <div className="rs-result-scroll-inner">
+            {/* Blob + speech bubble */}
+            <div className="rs-blob-clip">
+              <BlobMedia />
+            </div>
+            <div className="rs-speech-wrap">
+              <span className="rs-speech-text">Here's your match!</span>
+            </div>
+
+            {/* Product image */}
+            <div className="rs-product-area">
+              <img src={data.image} alt={data.name} className="rs-product-img" />
+            </div>
+
+            {/* Product name */}
+            <p className="rs-product-name">{data.name}</p>
+
+            {/* Description */}
+            <p className="rs-product-desc">
+              {data.descLines
+                ? data.descLines.map((line, index) => (
+                    <span key={line}>
+                      {line}
+                      {index < data.descLines.length - 1 && <br />}
+                    </span>
+                  ))
+                : data.desc}
+            </p>
+
+            {/* Lifestyle image */}
+            <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
+
+            {/* Next arrow button */}
+            <button className="rs-next-btn" onClick={onNext}>{data.nextLabel || "›"}</button>
+          </div>
         </div>
-        <div className="rs-speech-wrap">
-          <span className="rs-speech-text">Here's your match!</span>
-        </div>
 
-        {/* Product image */}
-        <div className="rs-product-area">
-          <img src={data.image} alt={data.name} className="rs-product-img" />
-        </div>
-
-        {/* Product name */}
-        <p className="rs-product-name">{data.name}</p>
-
-        {/* Description */}
-        <p className="rs-product-desc">{data.desc}</p>
-
-        {/* Lifestyle image */}
-        <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
-
-        {/* Next arrow button */}
-        <button className="rs-next-btn" onClick={onNext}>›</button>
+        <p className={`rs-scroll-cue${hasScrolledResult ? " rs-scroll-cue-hidden" : ""}`}>
+          <span className="rs-scroll-cue-text">Scroll down</span>
+          <span className="rs-scroll-cue-arrow" aria-hidden="true">↓</span>
+        </p>
 
         {/* Logo */}
         <div className="v2-logo-wrap">
