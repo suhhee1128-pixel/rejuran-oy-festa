@@ -670,7 +670,7 @@ function ResultScreen({ product, onRestart, onNext }) {
 
         <div
           className="rs-result-scroll"
-          onScroll={(event) => setHasScrolledResult(event.currentTarget.scrollTop > 12)}
+          onScroll={(event) => setHasScrolledResult(event.currentTarget.scrollTop > 1)}
         >
           <div className="rs-result-scroll-inner">
             {/* Blob + speech bubble */}
