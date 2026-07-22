@@ -656,8 +656,15 @@ const PRODUCT_DATA = {
     name: "MOISTURE TREATMENT AMPOULE",
     resultClass: "rs-moisture",
     image: "/moisture02.png",
-    desc: "Restore calm, deeply hydrated skin with Moisture Treatment Ampoule, a soothing hydrating serum designed to support the skin barrier, calm visible redness.",
-    lifestyle: "/moisture01.png",
+    descLines: [
+      "Restore calm, deeply hydrated skin with",
+      "Moisture Treatment Ampoule, a soothing serum",
+      "designed to support the skin barrier.",
+    ],
+    waveX: "564px",
+    waveY: "800px",
+    nextLabel: "Next",
+    lifestyle: "/moisture01-1.png",
   },
 };
 
