@@ -1565,14 +1565,15 @@ body {
   --rs-name-top: 1150px;
   --rs-name-font-size: 58px;
   --rs-desc-top: 1242px;
-  --rs-lifestyle-top: 1572px;
+  --rs-lifestyle-top: 1602px;
   --rs-lifestyle-width: 1020px;
   --rs-lifestyle-max-height: 700px;
   --rs-scroll-height: 2540px;
 }
 
 .rs-turnover .rs-result-scroll,
-.rs-dual-effect .rs-result-scroll {
+.rs-dual-effect .rs-result-scroll,
+.rs-pore .rs-result-scroll {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1581,12 +1582,14 @@ body {
 }
 
 .rs-turnover .rs-result-scroll::-webkit-scrollbar,
-.rs-dual-effect .rs-result-scroll::-webkit-scrollbar {
+.rs-dual-effect .rs-result-scroll::-webkit-scrollbar,
+.rs-pore .rs-result-scroll::-webkit-scrollbar {
   display: none;
 }
 
 .rs-turnover .rs-next-btn,
-.rs-dual-effect .rs-next-btn {
+.rs-dual-effect .rs-next-btn,
+.rs-pore .rs-next-btn {
   top: 2330px;
   left: 50%;
   right: auto;
@@ -1615,15 +1618,17 @@ body {
 }
 
 .rs-pore {
-  --rs-product-top: 390px;
-  --rs-product-width: 520px;
-  --rs-product-height: 520px;
+  --rs-product-top: 450px;
+  --rs-product-width: 640px;
+  --rs-product-height: 640px;
   --rs-product-shift-x: 32px;
-  --rs-name-top: 950px;
-  --rs-desc-top: 1030px;
-  --rs-lifestyle-top: 1150px;
-  --rs-lifestyle-width: 860px;
-  --rs-lifestyle-max-height: 570px;
+  --rs-name-top: 1120px;
+  --rs-name-font-size: 58px;
+  --rs-desc-top: 1278px;
+  --rs-lifestyle-top: 1602px;
+  --rs-lifestyle-width: 1020px;
+  --rs-lifestyle-max-height: 620px;
+  --rs-scroll-height: 2540px;
 }
 
 .rs-moisture {
@@ -1794,8 +1799,17 @@ body {
 }
 
 .rs-turnover .rs-scroll-cue,
-.rs-dual-effect .rs-scroll-cue {
+.rs-dual-effect .rs-scroll-cue,
+.rs-pore .rs-scroll-cue {
   display: block;
+}
+
+.rs-pore .rs-scroll-cue-text {
+  top: -22px;
+}
+
+.rs-pore .rs-scroll-cue-arrow {
+  top: 14px;
 }
 
 .rs-scroll-cue-hidden {
@@ -1827,7 +1841,8 @@ body {
 }
 
 .rs-turnover .rs-lifestyle-img,
-.rs-dual-effect .rs-lifestyle-img {
+.rs-dual-effect .rs-lifestyle-img,
+.rs-pore .rs-lifestyle-img {
   opacity: 1;
   filter: none;
 }

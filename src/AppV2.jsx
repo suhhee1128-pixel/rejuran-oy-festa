@@ -633,15 +633,23 @@ const PRODUCT_DATA = {
       "improve elasticity, texture, and overall radiance.",
     ],
     waveX: "564px",
-    waveY: "800px",
+    waveY: "770px",
     nextLabel: "Next",
     lifestyle: "/dualeffect01.png",
   },
   "Pore Tightening Ampoule": {
     name: "PORE TIGHTENING AMPOULE",
+    nameLines: ["PORE TIGHTENING", "AMPOULE"],
     resultClass: "rs-pore",
     image: "/pore02.png",
-    desc: "Refine the look of pores and achieve a smoother, more balanced complexion with Pore Tightening Ampoule.",
+    descLines: [
+      "Refine the look of pores and achieve",
+      "a smoother, more balanced complexion with",
+      "Pore Tightening Ampoule.",
+    ],
+    waveX: "572px",
+    waveY: "800px",
+    nextLabel: "Next",
     lifestyle: "/pore01.png",
   },
   "Moisture Treatment Ampoule": {
@@ -694,7 +702,16 @@ function ResultScreen({ product, onRestart, onNext }) {
             </div>
 
             {/* Product name */}
-            <p className="rs-product-name">{data.name}</p>
+            <p className="rs-product-name">
+              {data.nameLines
+                ? data.nameLines.map((line, index) => (
+                    <span key={line}>
+                      {line}
+                      {index < data.nameLines.length - 1 && <br />}
+                    </span>
+                  ))
+                : data.name}
+            </p>
 
             {/* Description */}
             <p className="rs-product-desc">
