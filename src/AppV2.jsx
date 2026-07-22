@@ -51,8 +51,8 @@ function BlobMedia({ className = "", alt = "" }) {
 }
 
 const suggestions = [
-  { icon: imgScienceFilled, text: "What is PDRN?", screen: "pdrn" },
-  { icon: imgScience, text: "What makes REJURAN's PDRN\ndifferent from other brands?", screen: "pdrn2" },
+  { icon: imgScience, text: "What is PDRN?", screen: "pdrn" },
+  { icon: imgScienceFilled, text: "What makes REJURAN's PDRN\ndifferent from other brands?", screen: "pdrn2" },
 ];
 
 const PDRN_ANSWER =
