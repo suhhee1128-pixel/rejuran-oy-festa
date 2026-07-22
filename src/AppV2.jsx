@@ -259,7 +259,7 @@ function SkinTypeScreen({ onNext, onBack }) {
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
             onClick={() => selected && onNext(selected)}
           >
-            Next
+            Next →
           </button>
         </div>
       )}
@@ -311,6 +311,35 @@ const RESULT_OPTIONS = [
 
 const QUIZ3_Q = "What results are you looking for?";
 const QUIZ2_Q = "What skin concern are you noticing most lately?";
+
+function SplitConcernQuestion({ text }) {
+  const emphasis = "What skin concern";
+  const breakPoint = "What skin concern are you noticing ";
+  if (!text.startsWith(breakPoint)) return text;
+  const emphasizedText = text.slice(0, Math.min(text.length, emphasis.length));
+  const firstLineRest = text.slice(emphasis.length, Math.min(text.length, breakPoint.length));
+  const secondLine = text.slice(breakPoint.length);
+  return (
+    <>
+      <span className="v2-question-emphasis">{emphasizedText}</span>
+      {firstLineRest}
+      {text.length > breakPoint.length && <br />}
+      {secondLine}
+    </>
+  );
+}
+
+function EmphasizedPrefix({ text, prefix }) {
+  if (!text.startsWith(prefix)) return text;
+  const emphasizedText = text.slice(0, Math.min(text.length, prefix.length));
+  const rest = text.slice(prefix.length);
+  return (
+    <>
+      <span className="v2-question-emphasis">{emphasizedText}</span>
+      {rest}
+    </>
+  );
+}
 
 /* ── Quiz 2 Screen ── */
 function Quiz2Screen({ skinType, onBack, onNext }) {
@@ -365,26 +394,26 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
 
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
-      <div className="v2-chat-blob-wrap">
+      <div className="v2-chat-blob-wrap v2-survey-followup-blob">
         <BlobMedia alt="REJURAN character" />
       </div>
 
       {/* User's previous answer */}
-      <div className="v2-bubble v2-bubble-user">{skinType}</div>
+      <div className="v2-bubble v2-bubble-user v2-survey-followup-user">{skinType}</div>
 
-      {/* AI response typing */}
-      <div className="v2-bubble v2-bubble-answer">
-        {typedResponse}
-        {!responseDone && <span className="v2-cursor" />}
+      {/* AI response and next question */}
+      <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer">
+        <span>
+          {typedResponse}
+          {!responseDone && <span className="v2-cursor" />}
+        </span>
+        {showQ2 && (
+          <span className="v2-followup-question">
+            <SplitConcernQuestion text={typedQ2} />
+            {!q2Done && <span className="v2-cursor" />}
+          </span>
+        )}
       </div>
-
-      {/* Second question bubble */}
-      {showQ2 && (
-        <div className="v2-bubble v2-bubble-answer v2-q2-bubble">
-          {typedQ2}
-          {!q2Done && <span className="v2-cursor" />}
-        </div>
-      )}
 
       {/* Concern options */}
       <div className="v2-quiz-grid v2-concern-grid">
@@ -402,14 +431,14 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
       </div>
 
       {visibleOptions >= CONCERN_OPTIONS.length && (
-        <div className="v2-quiz-actions v2-concern-actions">
+        <div className="v2-quiz-actions">
           <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
           <button
             type="button"
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
             onClick={() => selected && onNext(selected)}
           >
-            Next
+            Next →
           </button>
         </div>
       )}
@@ -504,29 +533,29 @@ function Quiz3Screen({ concern, onBack, onNext }) {
       <Header onBack={onBack} />
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
-      <div className="v2-chat-blob-wrap">
+      <div className="v2-chat-blob-wrap v2-survey-followup-blob">
         <BlobMedia alt="REJURAN character" />
       </div>
 
       {/* User's concern answer */}
-      <div className="v2-bubble v2-bubble-user">{concern}</div>
+      <div className="v2-bubble v2-bubble-user v2-survey-followup-user">{concern}</div>
 
-      {/* AI response */}
-      <div className="v2-bubble v2-bubble-answer">
-        {typedResponse}
-        {!responseDone && <span className="v2-cursor" />}
+      {/* AI response and next question */}
+      <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer">
+        <span>
+          {typedResponse}
+          {!responseDone && <span className="v2-cursor" />}
+        </span>
+        {showQ3 && (
+          <span className="v2-followup-question">
+            <EmphasizedPrefix text={typedQ3} prefix="What results" />
+            {!q3Done && <span className="v2-cursor" />}
+          </span>
+        )}
       </div>
 
-      {/* Third question */}
-      {showQ3 && (
-        <div className="v2-bubble v2-bubble-answer v2-q2-bubble">
-          {typedQ3}
-          {!q3Done && <span className="v2-cursor" />}
-        </div>
-      )}
-
       {/* Result options */}
-      <div className="v2-quiz-grid v2-concern-grid">
+      <div className="v2-quiz-grid v2-concern-grid v2-results-grid">
         {RESULT_OPTIONS.map((opt, i) => (
           <button
             key={opt}
@@ -541,14 +570,14 @@ function Quiz3Screen({ concern, onBack, onNext }) {
       </div>
 
       {visibleOptions >= RESULT_OPTIONS.length && (
-        <div className="v2-quiz-actions v2-concern-actions">
+        <div className="v2-quiz-actions">
           <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
           <button
             type="button"
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
             onClick={() => selected && onNext(selected)}
           >
-            Next
+            Next →
           </button>
         </div>
       )}
