@@ -475,10 +475,21 @@ function AnalyzingScreen({ onDone }) {
         <BlobMedia alt="REJURAN character" />
       </div>
 
+      <div className="v2-loading-card-stage" aria-hidden="true">
+        {[1, 2, 3, 4].map((n) => (
+          <img
+            key={n}
+            src={`/loading-card0${n}.png`}
+            alt=""
+            className={`v2-loading-card v2-loading-card-${n}`}
+          />
+        ))}
+      </div>
+
       {/* Text */}
       <div className="v2-analyzing-text">
         <p className="v2-analyzing-title">Perfect!</p>
-        <p className="v2-analyzing-body">I'm finding your best match<br />based on your answers.</p>
+        <p className="v2-analyzing-body">I’ll find your best match<br />based on your answers.</p>
       </div>
 
       <div className="v2-logo-wrap">
