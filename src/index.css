@@ -1626,9 +1626,13 @@ body {
   --rs-name-font-size: 58px;
   --rs-desc-top: 1278px;
   --rs-lifestyle-top: 1602px;
-  --rs-lifestyle-width: 1020px;
-  --rs-lifestyle-max-height: 620px;
-  --rs-scroll-height: 2540px;
+  --rs-lifestyle-width: 680px;
+  --rs-lifestyle-max-height: none;
+  --rs-scroll-height: 3040px;
+}
+
+.rs-pore .rs-next-btn {
+  top: 3020px;
 }
 
 .rs-moisture {

@@ -650,7 +650,7 @@ const PRODUCT_DATA = {
     waveX: "572px",
     waveY: "800px",
     nextLabel: "Next",
-    lifestyle: "/pore01.png",
+    lifestyle: "/pore01-1.png",
   },
   "Moisture Treatment Ampoule": {
     name: "MOISTURE TREATMENT AMPOULE",
