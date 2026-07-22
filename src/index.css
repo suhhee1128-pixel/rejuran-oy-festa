@@ -1571,7 +1571,8 @@ body {
   --rs-scroll-height: 2540px;
 }
 
-.rs-turnover .rs-result-scroll {
+.rs-turnover .rs-result-scroll,
+.rs-dual-effect .rs-result-scroll {
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1579,11 +1580,13 @@ body {
   scrollbar-width: none;
 }
 
-.rs-turnover .rs-result-scroll::-webkit-scrollbar {
+.rs-turnover .rs-result-scroll::-webkit-scrollbar,
+.rs-dual-effect .rs-result-scroll::-webkit-scrollbar {
   display: none;
 }
 
-.rs-turnover .rs-next-btn {
+.rs-turnover .rs-next-btn,
+.rs-dual-effect .rs-next-btn {
   top: 2330px;
   left: 50%;
   right: auto;
@@ -1598,13 +1601,17 @@ body {
 }
 
 .rs-dual-effect {
-  --rs-product-top: 370px;
-  --rs-product-width: 540px;
-  --rs-product-height: 540px;
+  --rs-product-top: 480px;
+  --rs-product-width: 640px;
+  --rs-product-height: 640px;
   --rs-product-shift-x: 24px;
-  --rs-name-top: 930px;
-  --rs-desc-top: 1010px;
-  --rs-lifestyle-top: 1160px;
+  --rs-name-top: 1150px;
+  --rs-name-font-size: 58px;
+  --rs-desc-top: 1242px;
+  --rs-lifestyle-top: 1572px;
+  --rs-lifestyle-width: 1020px;
+  --rs-lifestyle-max-height: 700px;
+  --rs-scroll-height: 2540px;
 }
 
 .rs-pore {
@@ -1786,7 +1793,8 @@ body {
   animation-delay: 0.08s;
 }
 
-.rs-turnover .rs-scroll-cue {
+.rs-turnover .rs-scroll-cue,
+.rs-dual-effect .rs-scroll-cue {
   display: block;
 }
 
@@ -1818,7 +1826,8 @@ body {
   z-index: 5;
 }
 
-.rs-turnover .rs-lifestyle-img {
+.rs-turnover .rs-lifestyle-img,
+.rs-dual-effect .rs-lifestyle-img {
   opacity: 1;
   filter: none;
 }

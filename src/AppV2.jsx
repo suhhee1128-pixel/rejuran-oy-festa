@@ -627,7 +627,14 @@ const PRODUCT_DATA = {
     name: "DUAL EFFECT AMPOULE",
     resultClass: "rs-dual-effect",
     image: "/dualeffect02.png",
-    desc: "Firmer, smoother-looking skin with c-PDRN®, an advanced skin-renewing ingredient that helps improve the appearance of elasticity, texture, and overall radiance.",
+    descLines: [
+      "Firmer, smoother-looking skin with c-PDRN®,",
+      "an advanced skin-renewing ingredient that helps",
+      "improve elasticity, texture, and overall radiance.",
+    ],
+    waveX: "564px",
+    waveY: "800px",
+    nextLabel: "Next",
     lifestyle: "/dualeffect01.png",
   },
   "Pore Tightening Ampoule": {
