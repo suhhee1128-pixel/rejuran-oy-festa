@@ -13,10 +13,11 @@ const imgEllipse     = "/ellipse.svg";
 
 /* ── Result screen assets ── */
 
-function InteractiveBackground({ chat = false, origin = "home", still = false }) {
+function InteractiveBackground({ chat = false, origin = "home", still = false, style }) {
   return (
     <div
       className={`v2-fluid-bg v2-fluid-bg--${origin}${chat ? " v2-fluid-bg-chat" : ""}${still ? " v2-fluid-bg--still" : ""}`}
+      style={style}
       aria-hidden="true"
     >
       <img className={`v2-bg${chat ? " v2-bg-chat" : ""}`} src={imgBackground} alt="" />
@@ -50,8 +51,8 @@ function BlobMedia({ className = "", alt = "" }) {
 }
 
 const suggestions = [
-  { icon: imgScienceFilled, text: "What is PDRN?", screen: "pdrn" },
-  { icon: imgScience, text: "What makes REJURAN's PDRN\ndifferent from other brands?", screen: "pdrn2" },
+  { icon: imgScience, text: "What is PDRN?", screen: "pdrn" },
+  { icon: imgScienceFilled, text: "What makes REJURAN's PDRN\ndifferent from other brands?", screen: "pdrn2" },
 ];
 
 const PDRN_ANSWER =
@@ -612,67 +613,137 @@ const PRODUCT_DATA = {
     name: "TURNOVER AMPOULE",
     resultClass: "rs-turnover",
     image: "/turnover02.png",
-    desc: "A youthful glow with c-PDRN®, a marine-based growth factor that helps improve the appearance of skin's tone, texture, and radiance.",
+    descLines: [
+      "A youthful glow with c-PDRN®, a marine-based",
+      "growth factor that helps improve the appearance of",
+      "skin's tone, texture, and radiance.",
+    ],
+    waveX: "558px",
+    waveY: "800px",
+    nextLabel: "Next",
     lifestyle: "/turnover01.png",
   },
   "Dual Effect Ampoule": {
     name: "DUAL EFFECT AMPOULE",
     resultClass: "rs-dual-effect",
     image: "/dualeffect02.png",
-    desc: "Firmer, smoother-looking skin with c-PDRN®, an advanced skin-renewing ingredient that helps improve the appearance of elasticity, texture, and overall radiance.",
+    descLines: [
+      "Firmer, smoother-looking skin with c-PDRN®,",
+      "an advanced skin-renewing ingredient that helps",
+      "improve elasticity, texture, and overall radiance.",
+    ],
+    waveX: "564px",
+    waveY: "770px",
+    nextLabel: "Next",
     lifestyle: "/dualeffect01.png",
   },
   "Pore Tightening Ampoule": {
     name: "PORE TIGHTENING AMPOULE",
+    nameLines: ["PORE TIGHTENING", "AMPOULE"],
     resultClass: "rs-pore",
     image: "/pore02.png",
-    desc: "Refine the look of pores and achieve a smoother, more balanced complexion with Pore Tightening Ampoule.",
-    lifestyle: "/pore01.png",
+    descLines: [
+      "Refine the look of pores and achieve",
+      "a smoother, more balanced complexion with",
+      "Pore Tightening Ampoule.",
+    ],
+    waveX: "572px",
+    waveY: "800px",
+    nextLabel: "Next",
+    lifestyle: "/pore01-1.png",
   },
   "Moisture Treatment Ampoule": {
     name: "MOISTURE TREATMENT AMPOULE",
     resultClass: "rs-moisture",
     image: "/moisture02.png",
-    desc: "Restore calm, deeply hydrated skin with Moisture Treatment Ampoule, a soothing hydrating serum designed to support the skin barrier, calm visible redness.",
-    lifestyle: "/moisture01.png",
+    descLines: [
+      "Restore calm, deeply hydrated skin with",
+      "Moisture Treatment Ampoule, a soothing serum",
+      "designed to support the skin barrier.",
+    ],
+    waveX: "564px",
+    waveY: "800px",
+    nextLabel: "Next",
+    lifestyle: "/moisture01-1.png",
   },
 };
 
 /* ── Result Screen ── */
 function ResultScreen({ product, onRestart, onNext }) {
   const data = PRODUCT_DATA[product] || PRODUCT_DATA["Turnover Ampoule"];
+  const [hasScrolledResult, setHasScrolledResult] = useState(false);
+
+  useEffect(() => {
+    setHasScrolledResult(false);
+  }, [product]);
 
   return (
     <>
-      <InteractiveBackground origin="result" />
+      <InteractiveBackground
+        origin="result"
+        style={{
+          "--wave-x": data.waveX,
+          "--wave-y": data.waveY,
+        }}
+      />
 
       <section className={`rs-page ${data.resultClass}`}>
         <Header onBack={null} />
 
-        {/* Blob + speech bubble */}
-        <div className="rs-blob-clip">
-          <BlobMedia />
+        <div
+          className="rs-result-scroll"
+          onScroll={(event) => setHasScrolledResult(event.currentTarget.scrollTop > 1)}
+        >
+          <div className="rs-result-scroll-inner">
+            {/* Blob + speech bubble */}
+            <div className="rs-blob-clip">
+              <BlobMedia />
+            </div>
+            <div className="rs-speech-wrap">
+              <span className="rs-speech-text">Here's your match!</span>
+            </div>
+
+            {/* Product image */}
+            <div className="rs-product-area">
+              <img src={data.image} alt={data.name} className="rs-product-img" />
+            </div>
+
+            {/* Product name */}
+            <p className="rs-product-name">
+              {data.nameLines
+                ? data.nameLines.map((line, index) => (
+                    <span key={line}>
+                      {line}
+                      {index < data.nameLines.length - 1 && <br />}
+                    </span>
+                  ))
+                : data.name}
+            </p>
+
+            {/* Description */}
+            <p className="rs-product-desc">
+              {data.descLines
+                ? data.descLines.map((line, index) => (
+                    <span key={line}>
+                      {line}
+                      {index < data.descLines.length - 1 && <br />}
+                    </span>
+                  ))
+                : data.desc}
+            </p>
+
+            {/* Lifestyle image */}
+            <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
+
+            {/* Next arrow button */}
+            <button className="rs-next-btn" onClick={onNext}>{data.nextLabel || "›"}</button>
+          </div>
         </div>
-        <div className="rs-speech-wrap">
-          <span className="rs-speech-text">Here's your match!</span>
-        </div>
 
-        {/* Product image */}
-        <div className="rs-product-area">
-          <img src={data.image} alt={data.name} className="rs-product-img" />
-        </div>
-
-        {/* Product name */}
-        <p className="rs-product-name">{data.name}</p>
-
-        {/* Description */}
-        <p className="rs-product-desc">{data.desc}</p>
-
-        {/* Lifestyle image */}
-        <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
-
-        {/* Next arrow button */}
-        <button className="rs-next-btn" onClick={onNext}>›</button>
+        <p className={`rs-scroll-cue${hasScrolledResult ? " rs-scroll-cue-hidden" : ""}`}>
+          <span className="rs-scroll-cue-text">Scroll down</span>
+          <span className="rs-scroll-cue-arrow" aria-hidden="true">↓</span>
+        </p>
 
         {/* Logo */}
         <div className="v2-logo-wrap">
