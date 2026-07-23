@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const imgBackground  = "/bg_figma.png";
 const imgBlob        = "/blob.png";
 const videoBlob      = "/blob-blinking.mp4";
 const imgLogo        = "/logo.png";
@@ -20,14 +19,15 @@ function InteractiveBackground({ chat = false, origin = "home", still = false, s
       style={style}
       aria-hidden="true"
     >
-      <img className={`v2-bg${chat ? " v2-bg-chat" : ""}`} src={imgBackground} alt="" />
       {!still && (
         <>
           <div className="v2-fluid-sheen" />
-          <span className="v2-idle-wave v2-idle-wave-1" />
-          <span className="v2-idle-wave v2-idle-wave-2" />
-          <span className="v2-idle-wave v2-idle-wave-3" />
-          <span className="v2-idle-wave v2-idle-wave-4" />
+          <div className="v2-wave-field">
+            <span className="v2-idle-wave v2-idle-wave-1" />
+            <span className="v2-idle-wave v2-idle-wave-2" />
+            <span className="v2-idle-wave v2-idle-wave-3" />
+            <span className="v2-idle-wave v2-idle-wave-4" />
+          </div>
         </>
       )}
     </div>
@@ -47,6 +47,49 @@ function BlobMedia({ className = "", alt = "" }) {
       playsInline
       preload="auto"
     />
+  );
+}
+
+function getCanvasRect(element) {
+  const layout = document.querySelector(".portrait-layout");
+  if (!element || !layout) return null;
+  const layoutRect = layout.getBoundingClientRect();
+  const rect = element.getBoundingClientRect();
+  const scale = layoutRect.width / 1080 || 1;
+  return {
+    left: (rect.left - layoutRect.left) / scale,
+    top: (rect.top - layoutRect.top) / scale,
+    width: rect.width / scale,
+    height: rect.height / scale,
+  };
+}
+
+function SurveyUserBubble({ children, origin }) {
+  const bubbleRef = useRef(null);
+  const [flyStyle, setFlyStyle] = useState(null);
+
+  useEffect(() => {
+    if (!origin || !bubbleRef.current) return;
+    const finalRect = getCanvasRect(bubbleRef.current);
+    if (!finalRect) return;
+    const originCenterX = origin.left + origin.width / 2;
+    const originCenterY = origin.top + origin.height / 2;
+    const finalCenterX = finalRect.left + finalRect.width / 2;
+    const finalCenterY = finalRect.top + finalRect.height / 2;
+    setFlyStyle({
+      "--answer-fly-x": `${originCenterX - finalCenterX}px`,
+      "--answer-fly-y": `${originCenterY - finalCenterY}px`,
+    });
+  }, [origin, children]);
+
+  return (
+    <div
+      ref={bubbleRef}
+      className={`v2-bubble v2-bubble-user v2-survey-followup-user${origin ? " v2-answer-fly-in" : ""}${flyStyle ? " v2-answer-fly-ready" : ""}`}
+      style={flyStyle || undefined}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -79,27 +122,81 @@ function Header({ onBack }) {
 }
 
 /* ── Shared Chat Screen ── */
-function ChatScreen({ question, answer, onBack, onNext }) {
+function ChatScreen({ question, answer, onBack, onNext, recommendation, variant = "default" }) {
+  const [showUserBubble, setShowUserBubble] = useState(false);
+  const [showBlob, setShowBlob] = useState(false);
+  const [showAnswerBubble, setShowAnswerBubble] = useState(false);
   const [phase, setPhase] = useState("loading");
   const [displayed, setDisplayed] = useState("");
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [showRecommendationChoices, setShowRecommendationChoices] = useState(false);
+  const [recommendationChoice, setRecommendationChoice] = useState("");
   const done = displayed.length >= answer.length;
 
   useEffect(() => {
-    const t = setTimeout(() => setPhase("typing"), 3000);
-    return () => clearTimeout(t);
-  }, []);
+    setShowUserBubble(false);
+    setShowBlob(false);
+    setShowAnswerBubble(false);
+    setPhase("loading");
+    setDisplayed("");
+    const userTimer = setTimeout(() => setShowUserBubble(true), 180);
+    const blobTimer = setTimeout(() => setShowBlob(true), 520);
+    const answerTimer = setTimeout(() => setShowAnswerBubble(true), 860);
+    return () => {
+      clearTimeout(userTimer);
+      clearTimeout(blobTimer);
+      clearTimeout(answerTimer);
+    };
+  }, [question, answer]);
 
   useEffect(() => {
+    if (!showAnswerBubble) return;
+    setPhase("loading");
+    setDisplayed("");
+    const t = setTimeout(() => setPhase("typing"), 900);
+    return () => clearTimeout(t);
+  }, [showAnswerBubble, question, answer]);
+
+  useEffect(() => {
+    if (!showAnswerBubble) return;
     if (phase !== "typing") return;
     if (done) return;
     const t = setTimeout(() => {
       setDisplayed(answer.slice(0, displayed.length + 1));
     }, 28);
     return () => clearTimeout(t);
-  }, [phase, displayed, done, answer]);
+  }, [showAnswerBubble, phase, displayed, done, answer]);
+
+  useEffect(() => {
+    setShowRecommendation(false);
+    setShowRecommendationChoices(false);
+    setRecommendationChoice("");
+  }, [question, answer]);
+
+  useEffect(() => {
+    if (!done || !recommendation) return;
+    const t = setTimeout(() => setShowRecommendation(true), 420);
+    return () => clearTimeout(t);
+  }, [done, recommendation]);
+
+  useEffect(() => {
+    if (!showRecommendation) return;
+    const t = setTimeout(() => setShowRecommendationChoices(true), 180);
+    return () => clearTimeout(t);
+  }, [showRecommendation]);
+
+  const goNextFromRecommendation = () => {
+    if (recommendationChoice === "yes") {
+      recommendation.onYes();
+      return;
+    }
+    if (recommendationChoice === "no") {
+      onNext();
+    }
+  };
 
   return (
-    <>
+    <div className={`v2-chat-screen v2-chat-screen--${variant}`}>
       <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
 
@@ -110,26 +207,67 @@ function ChatScreen({ question, answer, onBack, onNext }) {
         <img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} />
       </div>
 
-      <div className="v2-chat-blob-wrap">
-        <BlobMedia alt="REJURAN character" />
-      </div>
+      {showUserBubble && (
+        <div className="v2-bubble v2-bubble-user v2-chat-sequence-in">{question}</div>
+      )}
 
-      <div className="v2-bubble v2-bubble-user">{question}</div>
-
-      {phase === "loading" ? (
-        <div className="v2-bubble v2-bubble-typing">
-          <span className="v2-dot" />
-          <span className="v2-dot" />
-          <span className="v2-dot" />
-        </div>
-      ) : (
-        <div className="v2-bubble v2-bubble-answer v2-chat-answer">
-          {displayed}
-          {!done && <span className="v2-cursor" />}
+      {showBlob && (
+        <div className="v2-chat-blob-wrap v2-chat-sequence-in">
+          <BlobMedia alt="REJURAN character" />
         </div>
       )}
 
-      {done && (
+      {showAnswerBubble && (
+        phase === "loading" ? (
+          <div className="v2-bubble v2-bubble-typing v2-chat-sequence-in">
+            <span className="v2-dot" />
+            <span className="v2-dot" />
+            <span className="v2-dot" />
+          </div>
+        ) : (
+          <div className="v2-bubble v2-bubble-answer v2-chat-answer v2-chat-sequence-in">
+            {displayed}
+            {!done && <span className="v2-cursor" />}
+          </div>
+        )
+      )}
+
+      {showRecommendation && (
+        <div className="v2-chat-recommendation">
+          <div className="v2-chat-recommendation-bubble">
+            <p className="v2-chat-recommendation-copy">Want to explore this too?</p>
+            <p className="v2-chat-recommendation-question">{recommendation.question}</p>
+          </div>
+          {showRecommendationChoices && (
+            <div className="v2-chat-recommendation-actions">
+              <button
+                type="button"
+                className={`v2-chat-choice-btn${recommendationChoice === "yes" ? " v2-chat-choice-selected" : ""}`}
+                onClick={() => setRecommendationChoice("yes")}
+              >
+                <span className="v2-chat-choice-radio" />
+                <span>Yes</span>
+              </button>
+              <button
+                type="button"
+                className={`v2-chat-choice-btn${recommendationChoice === "no" ? " v2-chat-choice-selected" : ""}`}
+                onClick={() => setRecommendationChoice("no")}
+              >
+                <span className="v2-chat-choice-radio" />
+                <span>No</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showRecommendationChoices && recommendationChoice && (
+        <button type="button" className="v2-next-btn v2-chat-recommendation-next" onClick={goNextFromRecommendation}>
+          Next →
+        </button>
+      )}
+
+      {done && !recommendation && (
         <button type="button" className="v2-next-btn" onClick={onNext}>
           Next →
         </button>
@@ -138,7 +276,7 @@ function ChatScreen({ question, answer, onBack, onNext }) {
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -146,7 +284,7 @@ function ChatScreen({ question, answer, onBack, onNext }) {
 function GreatScreen({ onOk }) {
   return (
     <>
-      <InteractiveBackground origin="home" />
+      <InteractiveBackground origin="great" />
       <Header />
 
       <div className="v2-deco v2-deco-left">
@@ -188,6 +326,7 @@ function SkinTypeScreen({ onNext, onBack }) {
   const [showQuestion, setShowQuestion] = useState(false);
   const [typedQ, setTypedQ] = useState("");
   const [visibleOptions, setVisibleOptions] = useState(0);
+  const optionRefs = useRef({});
 
   // typing done when full text is displayed
   const typingDone = typedQ.length >= QUIZ_QUESTION.length;
@@ -240,6 +379,7 @@ function SkinTypeScreen({ onNext, onBack }) {
         {SKIN_OPTIONS.map((opt, i) => (
           <button
             key={opt}
+            ref={(node) => { optionRefs.current[opt] = node; }}
             type="button"
             className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
             onClick={() => setSelected(opt)}
@@ -256,8 +396,9 @@ function SkinTypeScreen({ onNext, onBack }) {
           <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
           <button
             type="button"
+            disabled={!selected}
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
-            onClick={() => selected && onNext(selected)}
+            onClick={() => selected && onNext(selected, getCanvasRect(optionRefs.current[selected]))}
           >
             Next →
           </button>
@@ -342,10 +483,13 @@ function EmphasizedPrefix({ text, prefix }) {
 }
 
 /* ── Quiz 2 Screen ── */
-function Quiz2Screen({ skinType, onBack, onNext }) {
+function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
   const [selected, setSelected] = useState(null);
   const aiResponse = SKIN_RESPONSES[skinType] || "Got it!";
+  const optionRefs = useRef({});
 
+  const [showFollowupBlob, setShowFollowupBlob] = useState(!answerOrigin);
+  const [showFollowupAnswer, setShowFollowupAnswer] = useState(!answerOrigin);
   const [typedResponse, setTypedResponse] = useState("");
   const [showQ2, setShowQ2] = useState(false);
   const [typedQ2, setTypedQ2] = useState("");
@@ -354,13 +498,26 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
   const responseDone = typedResponse.length >= aiResponse.length;
   const q2Done = typedQ2.length >= QUIZ2_Q.length;
 
+  useEffect(() => {
+    setShowFollowupBlob(false);
+    setShowFollowupAnswer(false);
+    const blobTimer = setTimeout(() => setShowFollowupBlob(true), answerOrigin ? 760 : 0);
+    const answerTimer = setTimeout(() => setShowFollowupAnswer(true), answerOrigin ? 1040 : 220);
+    return () => {
+      clearTimeout(blobTimer);
+      clearTimeout(answerTimer);
+    };
+  }, [answerOrigin, skinType]);
+
   // Step 1: type AI response immediately on mount
   useEffect(() => {
+    if (!showFollowupAnswer) return;
+    if (responseDone) return;
     const t = setTimeout(() => {
       setTypedResponse(aiResponse.slice(0, typedResponse.length + 1));
     }, 36);
     return () => clearTimeout(t);
-  }, [typedResponse, aiResponse]);
+  }, [showFollowupAnswer, typedResponse, aiResponse, responseDone]);
 
   // Step 2: after response done, wait 400ms then type Q2
   useEffect(() => {
@@ -394,32 +551,38 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
 
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
-      <div className="v2-chat-blob-wrap v2-survey-followup-blob">
-        <BlobMedia alt="REJURAN character" />
-      </div>
+      {showFollowupBlob && (
+        <div className="v2-chat-blob-wrap v2-survey-followup-blob v2-followup-content-in">
+          <BlobMedia alt="REJURAN character" />
+        </div>
+      )}
 
       {/* User's previous answer */}
-      <div className="v2-bubble v2-bubble-user v2-survey-followup-user">{skinType}</div>
+      <SurveyUserBubble origin={answerOrigin}>{skinType}</SurveyUserBubble>
 
       {/* AI response and next question */}
-      <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer">
-        <span>
-          {typedResponse}
-          {!responseDone && <span className="v2-cursor" />}
-        </span>
-        {showQ2 && (
-          <span className="v2-followup-question">
-            <SplitConcernQuestion text={typedQ2} />
-            {!q2Done && <span className="v2-cursor" />}
+      {showFollowupAnswer && (
+        <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer v2-followup-content-in">
+          <span>
+            {typedResponse}
+            {!responseDone && <span className="v2-cursor" />}
           </span>
-        )}
-      </div>
+          {showQ2 && (
+            <span className="v2-followup-question">
+              <SplitConcernQuestion text={typedQ2} />
+              {!q2Done && <span className="v2-cursor" />}
+              {q2Done && <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Concern options */}
       <div className="v2-quiz-grid v2-concern-grid">
         {CONCERN_OPTIONS.map((opt, i) => (
           <button
             key={opt}
+            ref={(node) => { optionRefs.current[opt] = node; }}
             type="button"
             className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
             onClick={() => setSelected(opt)}
@@ -435,8 +598,9 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
           <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
           <button
             type="button"
+            disabled={!selected}
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
-            onClick={() => selected && onNext(selected)}
+            onClick={() => selected && onNext(selected, getCanvasRect(optionRefs.current[selected]))}
           >
             Next →
           </button>
@@ -453,7 +617,7 @@ function Quiz2Screen({ skinType, onBack, onNext }) {
 /* ── Analyzing Screen ── */
 function AnalyzingScreen({ onDone }) {
   useEffect(() => {
-    const t = setTimeout(onDone, 4000);
+    const t = setTimeout(onDone, 7600);
     return () => clearTimeout(t);
   }, [onDone]);
 
@@ -485,6 +649,7 @@ function AnalyzingScreen({ onDone }) {
           />
         ))}
       </div>
+      <div className="v2-card-wave-focus" aria-hidden="true" />
 
       {/* Text */}
       <div className="v2-analyzing-text">
@@ -500,10 +665,12 @@ function AnalyzingScreen({ onDone }) {
 }
 
 /* ── Quiz 3 Screen ── */
-function Quiz3Screen({ concern, onBack, onNext }) {
+function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
   const [selected, setSelected] = useState(null);
   const aiResponse = CONCERN_RESPONSES[concern] || "Noted!";
 
+  const [showFollowupBlob, setShowFollowupBlob] = useState(!answerOrigin);
+  const [showFollowupAnswer, setShowFollowupAnswer] = useState(!answerOrigin);
   const [typedResponse, setTypedResponse] = useState("");
   const [showQ3, setShowQ3] = useState(false);
   const [typedQ3, setTypedQ3] = useState("");
@@ -513,10 +680,22 @@ function Quiz3Screen({ concern, onBack, onNext }) {
   const q3Done = typedQ3.length >= QUIZ3_Q.length;
 
   useEffect(() => {
+    setShowFollowupBlob(false);
+    setShowFollowupAnswer(false);
+    const blobTimer = setTimeout(() => setShowFollowupBlob(true), answerOrigin ? 760 : 0);
+    const answerTimer = setTimeout(() => setShowFollowupAnswer(true), answerOrigin ? 1040 : 220);
+    return () => {
+      clearTimeout(blobTimer);
+      clearTimeout(answerTimer);
+    };
+  }, [answerOrigin, concern]);
+
+  useEffect(() => {
+    if (!showFollowupAnswer) return;
     if (responseDone) return;
     const t = setTimeout(() => setTypedResponse(aiResponse.slice(0, typedResponse.length + 1)), 36);
     return () => clearTimeout(t);
-  }, [typedResponse, aiResponse, responseDone]);
+  }, [showFollowupAnswer, typedResponse, aiResponse, responseDone]);
 
   useEffect(() => {
     if (!responseDone) return;
@@ -544,26 +723,31 @@ function Quiz3Screen({ concern, onBack, onNext }) {
       <Header onBack={onBack} />
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
-      <div className="v2-chat-blob-wrap v2-survey-followup-blob">
-        <BlobMedia alt="REJURAN character" />
-      </div>
+      {showFollowupBlob && (
+        <div className="v2-chat-blob-wrap v2-survey-followup-blob v2-followup-content-in">
+          <BlobMedia alt="REJURAN character" />
+        </div>
+      )}
 
       {/* User's concern answer */}
-      <div className="v2-bubble v2-bubble-user v2-survey-followup-user">{concern}</div>
+      <SurveyUserBubble origin={answerOrigin}>{concern}</SurveyUserBubble>
 
       {/* AI response and next question */}
-      <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer">
-        <span>
-          {typedResponse}
-          {!responseDone && <span className="v2-cursor" />}
-        </span>
-        {showQ3 && (
-          <span className="v2-followup-question">
-            <EmphasizedPrefix text={typedQ3} prefix="What results" />
-            {!q3Done && <span className="v2-cursor" />}
+      {showFollowupAnswer && (
+        <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer v2-followup-content-in">
+          <span>
+            {typedResponse}
+            {!responseDone && <span className="v2-cursor" />}
           </span>
-        )}
-      </div>
+          {showQ3 && (
+            <span className="v2-followup-question">
+              <EmphasizedPrefix text={typedQ3} prefix="What results" />
+              {!q3Done && <span className="v2-cursor" />}
+              {q3Done && <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Result options */}
       <div className="v2-quiz-grid v2-concern-grid v2-results-grid">
@@ -585,6 +769,7 @@ function Quiz3Screen({ concern, onBack, onNext }) {
           <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
           <button
             type="button"
+            disabled={!selected}
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
             onClick={() => selected && onNext(selected)}
           >
@@ -833,9 +1018,19 @@ function AppV2() {
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
   const [product, setProduct] = useState("");
+  const [viewedPdrnScreens, setViewedPdrnScreens] = useState([]);
+  const [skinAnswerOrigin, setSkinAnswerOrigin] = useState(null);
+  const [concernAnswerOrigin, setConcernAnswerOrigin] = useState(null);
   // blobPos trails screen by one frame so the CSS transition always fires
   const [blobPos, setBlobPos] = useState("great");
   const showBlob = screen === "great" || screen === "quiz1";
+
+  useEffect(() => {
+    if (screen !== "pdrn" && screen !== "pdrn2") return;
+    setViewedPdrnScreens((prev) => (
+      prev.includes(screen) ? prev : [...prev, screen]
+    ));
+  }, [screen]);
 
   const goToQuiz = () => {
     setScreen("quiz1");
@@ -858,37 +1053,49 @@ function AppV2() {
         {screen === "home"  && <HomeScreen onNavigate={setScreen} onResult={(p) => { setProduct(p); setScreen("result"); }} />}
         {screen === "pdrn"  && (
           <ChatScreen
+            variant="pdrn"
             question="What is PDRN?"
             answer={PDRN_ANSWER}
             onBack={() => setScreen("home")}
             onNext={() => setScreen("great")}
+            recommendation={!viewedPdrnScreens.includes("pdrn2") ? {
+              question: "What makes REJURAN's PDRN different from other brands?",
+              onYes: () => setScreen("pdrn2"),
+            } : null}
           />
         )}
         {screen === "pdrn2" && (
           <ChatScreen
+            variant="pdrn-diff"
             question="What makes REJURAN's PDRN different?"
             answer={PDRN_DIFF_ANSWER}
             onBack={() => setScreen("home")}
             onNext={() => setScreen("great")}
+            recommendation={!viewedPdrnScreens.includes("pdrn") ? {
+              question: "What is PDRN?",
+              onYes: () => setScreen("pdrn"),
+            } : null}
           />
         )}
         {screen === "great" && <GreatScreen onOk={goToQuiz} />}
         {screen === "quiz1" && (
           <SkinTypeScreen
             onBack={goBackToGreat}
-            onNext={(skinType) => { setSkinType(skinType); setScreen("quiz2"); }}
+            onNext={(skinType, origin) => { setSkinType(skinType); setSkinAnswerOrigin(origin); setScreen("quiz2"); }}
           />
         )}
         {screen === "quiz2" && (
           <Quiz2Screen
             skinType={skinType}
+            answerOrigin={skinAnswerOrigin}
             onBack={() => setScreen("quiz1")}
-            onNext={(c) => { setConcern(c); setProduct(PRODUCT_MAP[c] || ""); setScreen("quiz3"); }}
+            onNext={(c, origin) => { setConcern(c); setConcernAnswerOrigin(origin); setProduct(PRODUCT_MAP[c] || ""); setScreen("quiz3"); }}
           />
         )}
         {screen === "quiz3" && (
           <Quiz3Screen
             concern={concern}
+            answerOrigin={concernAnswerOrigin}
             onBack={() => setScreen("quiz2")}
             onNext={() => setScreen("analyzing")}
           />
