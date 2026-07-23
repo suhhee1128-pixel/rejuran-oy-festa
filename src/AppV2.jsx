@@ -42,10 +42,12 @@ const blobFragmentShader = `
 
     vec2 p = facePosition / 1.09;
     float edgeAmount = smoothstep(0.34, 1.34, length(p)) * 0.62;
+    float whiteRim = smoothstep(0.86, 1.22, length(p)) * 0.18;
 
     vec3 core = vec3(0.0157, 0.7451, 0.6902);
     vec3 edge = vec3(0.8078, 0.9529, 0.9529);
     vec3 color = mix(core, edge, edgeAmount);
+    color = mix(color, vec3(1.0), whiteRim);
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -123,7 +125,7 @@ function HomeBlob3D({ className = "", alt = "" }) {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    camera.position.set(0, 0, 5.2);
+    camera.position.set(0, 0, 9.6);
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
@@ -136,6 +138,7 @@ function HomeBlob3D({ className = "", alt = "" }) {
     mount.appendChild(renderer.domElement);
 
     const blobGroup = new THREE.Group();
+    blobGroup.scale.set(1, 1, 1);
     scene.add(blobGroup);
 
     const ambient = new THREE.AmbientLight(0xffffff, 1.35);
@@ -149,7 +152,7 @@ function HomeBlob3D({ className = "", alt = "" }) {
     rimLight.position.set(3.2, 2.4, 3.6);
     scene.add(rimLight);
 
-    const bodyGeometry = new RoundedBoxGeometry(2.18, 2.18, 2.18, 28, 0.58);
+    const bodyGeometry = new RoundedBoxGeometry(2.18, 2.18, 2.18, 32, 0.74);
     const basePositions = bodyGeometry.attributes.position.array.slice();
     const bodyMaterial = new THREE.ShaderMaterial({
       vertexShader: blobVertexShader,
@@ -165,17 +168,18 @@ function HomeBlob3D({ className = "", alt = "" }) {
       transparent: true,
       opacity: 0.96,
       depthWrite: false,
-      depthTest: false,
+      depthTest: true,
       blending: THREE.AdditiveBlending,
     });
     const leftEye = new THREE.Sprite(eyeMaterial);
-    leftEye.position.set(-0.43, -0.02, 1.18);
-    leftEye.scale.set(0.24, 0.68, 1);
+    leftEye.position.set(-0.39, -0.02, 1.18);
+    leftEye.scale.set(0.38, 0.58, 1);
     blobGroup.add(leftEye);
 
-    const rightEye = leftEye.clone();
-    rightEye.material = eyeMaterial.clone();
-    rightEye.position.x = 0.43;
+    const rightEye = new THREE.Sprite(eyeMaterial);
+    rightEye.position.copy(leftEye.position);
+    rightEye.position.x = 0.39;
+    rightEye.scale.copy(leftEye.scale);
     blobGroup.add(rightEye);
 
     const resize = () => {
@@ -191,11 +195,11 @@ function HomeBlob3D({ className = "", alt = "" }) {
     resizeObserver.observe(mount);
 
     const startTime = performance.now();
-    let baseRotation = 0;
     let spinStart = 0;
-    let spinDuration = 0;
     let nextSpinAt = 1.8;
-    const spinEase = (value) => 1 - Math.pow(1 - value, 3);
+    const spinDuration = 1.85;
+    const smooth = (value) => value * value * (3 - 2 * value);
+    const pulseAt = (value, center, width) => Math.max(0, 1 - Math.abs(value - center) / width);
     let rafId = 0;
     const animate = () => {
       const t = (performance.now() - startTime) * 0.001;
@@ -208,9 +212,9 @@ function HomeBlob3D({ className = "", alt = "" }) {
         const z = basePositions[index + 2];
         const pulse =
           1 +
-          Math.sin(x * 3.1 + t * 1.35) * 0.026 +
-          Math.sin(y * 4.4 + t * 1.05) * 0.022 +
-          Math.sin(z * 5.3 + t * 1.18) * 0.018;
+          Math.sin(x * 3.1 + t * 1.35) * 0.01 +
+          Math.sin(y * 4.4 + t * 1.05) * 0.008 +
+          Math.sin(z * 5.3 + t * 1.18) * 0.006;
 
         positions.setXYZ(i, x * pulse, y * pulse, z * pulse);
       }
@@ -220,26 +224,34 @@ function HomeBlob3D({ className = "", alt = "" }) {
 
       if (!spinStart && t >= nextSpinAt) {
         spinStart = t;
-        spinDuration = 0.58 + Math.random() * 0.28;
       }
 
-      let spinRotation = 0;
+      let spinProgress = 0;
       if (spinStart) {
-        const progress = Math.min((t - spinStart) / spinDuration, 1);
-        spinRotation = spinEase(progress) * Math.PI * 2;
+        spinProgress = Math.min((t - spinStart) / spinDuration, 1);
 
-        if (progress >= 1) {
-          baseRotation += Math.PI * 2;
+        if (spinProgress >= 1) {
           spinStart = 0;
-          nextSpinAt = t + 2.2 + Math.random() * 3.8;
-          spinRotation = 0;
+          nextSpinAt = t + 2.3 + Math.random() * 3.2;
+          spinProgress = 0;
         }
       }
 
-      const idleTurn = Math.sin(t * 0.72) * 0.16 + Math.sin(t * 1.13) * 0.045;
-      blobGroup.rotation.y = baseRotation + idleTurn + spinRotation;
-      blobGroup.rotation.x = Math.sin(t * 0.9) * 0.07;
-      blobGroup.position.y = Math.sin(t * 1.2) * 0.06;
+      const idleY = Math.sin(t * 1.35) * 0.085;
+      const idleWobble = spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
+      const jumpArc = spinStart ? Math.sin(spinProgress * Math.PI) : 0;
+      const rebound = spinStart ? Math.sin(pulseAt(spinProgress, 0.93, 0.07) * Math.PI) * 0.035 : 0;
+      const jumpY = spinStart ? jumpArc * 0.54 + rebound : 0;
+      const spinTurn = spinStart ? smooth(spinProgress) * Math.PI * 2 : 0;
+
+      blobGroup.scale.set(1, 1, 1);
+      const rotationY = spinTurn + idleWobble;
+      const frontVisibility = Math.max(0, Math.cos(rotationY));
+      eyeMaterial.opacity = 0.96 * smooth(Math.min(frontVisibility * 1.35, 1));
+
+      blobGroup.rotation.y = rotationY;
+      blobGroup.rotation.x = Math.sin(t * 0.9) * 0.02 - jumpArc * 0.035;
+      blobGroup.position.y = -0.12 + idleY + jumpY;
 
       renderer.render(scene, camera);
       rafId = requestAnimationFrame(animate);
@@ -254,7 +266,6 @@ function HomeBlob3D({ className = "", alt = "" }) {
       bodyMaterial.dispose();
       eyeTexture.dispose();
       eyeMaterial.dispose();
-      rightEye.material.dispose();
       renderer.dispose();
     };
   }, []);
