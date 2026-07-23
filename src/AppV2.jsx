@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-const imgBackground  = "/bg_figma.png";
 const imgBlob        = "/blob.png";
 const videoBlob      = "/blob-blinking.mp4";
 const imgLogo        = "/logo.png";
@@ -20,14 +19,15 @@ function InteractiveBackground({ chat = false, origin = "home", still = false, s
       style={style}
       aria-hidden="true"
     >
-      <img className={`v2-bg${chat ? " v2-bg-chat" : ""}`} src={imgBackground} alt="" />
       {!still && (
         <>
           <div className="v2-fluid-sheen" />
-          <span className="v2-idle-wave v2-idle-wave-1" />
-          <span className="v2-idle-wave v2-idle-wave-2" />
-          <span className="v2-idle-wave v2-idle-wave-3" />
-          <span className="v2-idle-wave v2-idle-wave-4" />
+          <div className="v2-wave-field">
+            <span className="v2-idle-wave v2-idle-wave-1" />
+            <span className="v2-idle-wave v2-idle-wave-2" />
+            <span className="v2-idle-wave v2-idle-wave-3" />
+            <span className="v2-idle-wave v2-idle-wave-4" />
+          </div>
         </>
       )}
     </div>
@@ -79,9 +79,11 @@ function Header({ onBack }) {
 }
 
 /* ── Shared Chat Screen ── */
-function ChatScreen({ question, answer, onBack, onNext }) {
+function ChatScreen({ question, answer, onBack, onNext, recommendation }) {
   const [phase, setPhase] = useState("loading");
   const [displayed, setDisplayed] = useState("");
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [recommendationChoice, setRecommendationChoice] = useState("");
   const done = displayed.length >= answer.length;
 
   useEffect(() => {
@@ -97,6 +99,27 @@ function ChatScreen({ question, answer, onBack, onNext }) {
     }, 28);
     return () => clearTimeout(t);
   }, [phase, displayed, done, answer]);
+
+  useEffect(() => {
+    if (!done || !recommendation) return;
+    const t = setTimeout(() => setShowRecommendation(true), 420);
+    return () => clearTimeout(t);
+  }, [done, recommendation]);
+
+  useEffect(() => {
+    setShowRecommendation(false);
+    setRecommendationChoice("");
+  }, [question, answer]);
+
+  const goNextFromRecommendation = () => {
+    if (recommendationChoice === "yes") {
+      recommendation.onYes();
+      return;
+    }
+    if (recommendationChoice === "no") {
+      onNext();
+    }
+  };
 
   return (
     <>
@@ -129,7 +152,40 @@ function ChatScreen({ question, answer, onBack, onNext }) {
         </div>
       )}
 
-      {done && (
+      {showRecommendation && (
+        <div className="v2-chat-recommendation">
+          <div className="v2-chat-recommendation-bubble">
+            <p className="v2-chat-recommendation-copy">Want to explore this too?</p>
+            <p className="v2-chat-recommendation-question">{recommendation.question}</p>
+          </div>
+          <div className="v2-chat-recommendation-actions">
+            <button
+              type="button"
+              className={`v2-chat-choice-btn${recommendationChoice === "yes" ? " v2-chat-choice-selected" : ""}`}
+              onClick={() => setRecommendationChoice("yes")}
+            >
+              <span className="v2-chat-choice-radio" />
+              <span>Yes</span>
+            </button>
+            <button
+              type="button"
+              className={`v2-chat-choice-btn${recommendationChoice === "no" ? " v2-chat-choice-selected" : ""}`}
+              onClick={() => setRecommendationChoice("no")}
+            >
+              <span className="v2-chat-choice-radio" />
+              <span>No</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showRecommendation && recommendationChoice && (
+        <button type="button" className="v2-next-btn v2-chat-recommendation-next" onClick={goNextFromRecommendation}>
+          Next →
+        </button>
+      )}
+
+      {done && !recommendation && (
         <button type="button" className="v2-next-btn" onClick={onNext}>
           Next →
         </button>
@@ -146,7 +202,7 @@ function ChatScreen({ question, answer, onBack, onNext }) {
 function GreatScreen({ onOk }) {
   return (
     <>
-      <InteractiveBackground origin="home" />
+      <InteractiveBackground origin="great" />
       <Header />
 
       <div className="v2-deco v2-deco-left">
@@ -485,6 +541,7 @@ function AnalyzingScreen({ onDone }) {
           />
         ))}
       </div>
+      <div className="v2-card-wave-focus" aria-hidden="true" />
 
       {/* Text */}
       <div className="v2-analyzing-text">
@@ -833,9 +890,17 @@ function AppV2() {
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
   const [product, setProduct] = useState("");
+  const [viewedPdrnScreens, setViewedPdrnScreens] = useState([]);
   // blobPos trails screen by one frame so the CSS transition always fires
   const [blobPos, setBlobPos] = useState("great");
   const showBlob = screen === "great" || screen === "quiz1";
+
+  useEffect(() => {
+    if (screen !== "pdrn" && screen !== "pdrn2") return;
+    setViewedPdrnScreens((prev) => (
+      prev.includes(screen) ? prev : [...prev, screen]
+    ));
+  }, [screen]);
 
   const goToQuiz = () => {
     setScreen("quiz1");
@@ -862,6 +927,10 @@ function AppV2() {
             answer={PDRN_ANSWER}
             onBack={() => setScreen("home")}
             onNext={() => setScreen("great")}
+            recommendation={!viewedPdrnScreens.includes("pdrn2") ? {
+              question: "What makes REJURAN's PDRN different from other brands?",
+              onYes: () => setScreen("pdrn2"),
+            } : null}
           />
         )}
         {screen === "pdrn2" && (
@@ -870,6 +939,10 @@ function AppV2() {
             answer={PDRN_DIFF_ANSWER}
             onBack={() => setScreen("home")}
             onNext={() => setScreen("great")}
+            recommendation={!viewedPdrnScreens.includes("pdrn") ? {
+              question: "What is PDRN?",
+              onYes: () => setScreen("pdrn"),
+            } : null}
           />
         )}
         {screen === "great" && <GreatScreen onOk={goToQuiz} />}
