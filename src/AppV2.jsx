@@ -203,6 +203,45 @@ function BlobMedia({ className = "", alt = "", magic = false, magicBurstKey = 0 
   );
 }
 
+function MagicTrail({ className = "" }) {
+  return (
+    <span
+      className={`home-blob-magic-trail home-blob-magic-trail--burst${className ? ` ${className}` : ""}`}
+      aria-hidden="true"
+    >
+      {Array.from({ length: 84 }, (_, index) => (
+        <i key={index} style={getMagicSparkStyle(index)} />
+      ))}
+    </span>
+  );
+}
+
+function getMagicSparkStyle(index) {
+  const angle = ((index * 137.508) % 360) * (Math.PI / 180);
+  const ring = index % 6;
+  const baseRadius = [118, 162, 214, 276, 338, 404][ring];
+  const radiusJitter = ((index * 29) % 53) - 26;
+  const radius = baseRadius + radiusJitter;
+  const drift = Math.sin(index * 12.9898) * 18;
+  const x = Math.cos(angle) * radius + Math.cos(angle * 2.35) * drift;
+  const y = Math.sin(angle) * radius * 0.8 + Math.sin(angle * 1.72) * drift;
+  const size = index % 17 === 0 ? 5.2 : index % 11 === 0 ? 4.4 : index % 5 === 0 ? 3.7 : 3.1;
+  const delay = (index % 30) * 0.014;
+
+  return {
+    "--spark-near-x": `${(x * 0.34).toFixed(1)}px`,
+    "--spark-near-y": `${(y * 0.34).toFixed(1)}px`,
+    "--spark-mid-x": `${(x * 0.56).toFixed(1)}px`,
+    "--spark-mid-y": `${(y * 0.56).toFixed(1)}px`,
+    "--spark-far-x": `${(x * 0.86).toFixed(1)}px`,
+    "--spark-far-y": `${(y * 0.86).toFixed(1)}px`,
+    "--spark-x": `${x.toFixed(1)}px`,
+    "--spark-y": `${y.toFixed(1)}px`,
+    "--spark-size": `${size}px`,
+    "--spark-delay": `${delay.toFixed(2)}s`,
+  };
+}
+
 function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) {
   const mountRef = useRef(null);
   const trailRef = useRef(null);
@@ -315,12 +354,9 @@ function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) 
         const trail = trailRef.current;
         if (!trail) return;
 
-        [trail, ...trail.querySelectorAll("*")].forEach((element) => {
-          element.getAnimations().forEach((animation) => {
-            animation.cancel();
-            animation.play();
-          });
-        });
+        trail.classList.remove("home-blob-magic-trail--burst");
+        void trail.offsetWidth;
+        trail.classList.add("home-blob-magic-trail--burst");
       };
       replayTrailRef.current = replayMagicTrail;
       let rafId = 0;
@@ -411,9 +447,9 @@ function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) 
       aria-label={alt}
     >
       {magic && (
-        <span ref={trailRef} className="home-blob-magic-trail" aria-hidden="true">
-          {Array.from({ length: 48 }, (_, index) => (
-            <i key={index} />
+        <span ref={trailRef} className="home-blob-magic-trail home-blob-magic-trail--burst" aria-hidden="true">
+          {Array.from({ length: 84 }, (_, index) => (
+            <i key={index} style={getMagicSparkStyle(index)} />
           ))}
         </span>
       )}
@@ -1299,7 +1335,7 @@ function ResultScreen({ product, onRestart, onNext }) {
           <div className="rs-result-scroll-inner">
             {/* Blob + speech bubble */}
             <div className="rs-blob-clip">
-              <BlobMedia magic="strong" />
+              <BlobMedia />
             </div>
             <div className="rs-speech-wrap">
               <span className="rs-speech-text">Here's your match!</span>
@@ -1307,6 +1343,7 @@ function ResultScreen({ product, onRestart, onNext }) {
 
             {/* Product image */}
             <div className="rs-product-area">
+              <MagicTrail className="rs-product-magic-trail" />
               <img src={data.image} alt={data.name} className="rs-product-img" />
             </div>
 
@@ -1393,6 +1430,8 @@ function AppV2() {
   const [skinAnswerOrigin, setSkinAnswerOrigin] = useState(null);
   const [concernAnswerOrigin, setConcernAnswerOrigin] = useState(null);
   const [sharedMagicBurstKey, setSharedMagicBurstKey] = useState(0);
+  const [isGreatMagicBurst, setIsGreatMagicBurst] = useState(false);
+  const greatMagicTimeoutRef = useRef(null);
   // blobPos trails screen by one frame so the CSS transition always fires
   const [blobPos, setBlobPos] = useState("great");
   const showBlob = screen === "great" || screen === "quiz1";
@@ -1404,16 +1443,36 @@ function AppV2() {
     ));
   }, [screen]);
 
+  useEffect(() => () => {
+    if (greatMagicTimeoutRef.current) {
+      clearTimeout(greatMagicTimeoutRef.current);
+    }
+  }, []);
+
   const goToQuiz = () => {
+    if (greatMagicTimeoutRef.current) {
+      clearTimeout(greatMagicTimeoutRef.current);
+    }
+
+    setBlobPos("great");
+    setIsGreatMagicBurst(true);
     setSharedMagicBurstKey((key) => key + 1);
-    setScreen("quiz1");
-    // Keep blob at "great" position for one paint, then animate to "quiz1"
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setBlobPos("quiz1"));
-    });
+    greatMagicTimeoutRef.current = setTimeout(() => {
+      setIsGreatMagicBurst(false);
+      setScreen("quiz1");
+      // Keep blob at "great" position for one paint, then animate to "quiz1"
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setBlobPos("quiz1"));
+      });
+    }, 520);
   };
 
   const goBackToGreat = () => {
+    if (greatMagicTimeoutRef.current) {
+      clearTimeout(greatMagicTimeoutRef.current);
+      greatMagicTimeoutRef.current = null;
+    }
+    setIsGreatMagicBurst(false);
     setBlobPos("great");
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setScreen("great"));
@@ -1491,7 +1550,7 @@ function AppV2() {
         {showBlob && (
           <BlobMedia
             className={`v2-shared-blob v2-shared-blob--${blobPos}`}
-            magic={screen === "quiz1" ? "strong" : false}
+            magic={screen === "great" && isGreatMagicBurst ? "strong" : false}
             magicBurstKey={sharedMagicBurstKey}
           />
         )}
