@@ -386,17 +386,40 @@ body {
   z-index: 40;
 }
 
-.v2-header-icon-left {
+.v2-header-icon-btn,
+.v2-header-center {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.v2-header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 60px;
   height: 60px;
   flex-shrink: 0;
+  cursor: pointer;
+}
+
+.v2-header-icon-btn:active {
+  transform: scale(0.96);
+}
+
+.v2-header-icon-left {
+  width: 60px;
+  height: 60px;
   object-fit: contain;
 }
 
 .v2-header-icon-right {
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
+  width: 92px;
+  height: 92px;
   object-fit: contain;
 }
 
@@ -408,6 +431,7 @@ body {
   gap: 12px;
   width: 433px;
   flex-shrink: 0;
+  text-align: center;
 }
 
 .v2-title-row {
@@ -425,6 +449,10 @@ body {
   line-height: normal;
   color: #000;
   white-space: nowrap;
+}
+
+.v2-title-brand {
+  font-family: "quiche-sans", "Pretendard", sans-serif;
 }
 
 .v2-chevron {
@@ -457,8 +485,8 @@ body {
   width: 80px;
   height: 80px;
   border-radius: 16px;
-  background: rgba(30,162,158,0.15);
-  border: 2px solid #1EA29E;
+  background: transparent;
+  border: 0;
   font-family: 'Pretendard', sans-serif;
   font-size: 32px;
   font-weight: 700;
@@ -723,6 +751,14 @@ body {
   opacity: 0.68;
 }
 
+.v2-shared-blob.home-blob-3d--magic-strong .home-blob-magic-trail {
+  animation-duration: 1.75s;
+}
+
+.v2-shared-blob.home-blob-3d--magic-strong .home-blob-magic-trail i {
+  animation-duration: 1.55s;
+}
+
 @keyframes home-blob-aura {
   0%, 100% {
     opacity: 0.72;
@@ -806,9 +842,9 @@ body {
   top: 823px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: "Pretendard", sans-serif;
+  font-family: "quiche-sans", "Pretendard", sans-serif;
   font-weight: 400;
-  font-size: 64px;
+  font-size: 58px;
   text-align: center;
   line-height: 1.3;
   color: #000;
@@ -818,6 +854,63 @@ body {
 
 .v2-greeting p {
   margin: 0;
+}
+
+.v2-greeting-line-2 {
+  font-size: 52px;
+}
+
+.v2-greeting-line strong {
+  font-weight: 700;
+}
+
+.v2-nav-page {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 var(--v2-safe-x);
+  text-align: center;
+}
+
+.v2-nav-page-kicker {
+  margin: 0;
+  font-family: "Pretendard", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.48);
+}
+
+.v2-nav-page-title {
+  margin: 0;
+  font-family: "Quiche Sans", "Pretendard", serif;
+  font-size: 72px;
+  font-weight: 500;
+  line-height: 1.05;
+  color: #000;
+}
+
+.v2-nav-page-back {
+  margin-top: 34px;
+  min-width: 168px;
+  height: 72px;
+  border: 0;
+  border-radius: 36px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 12px 36px rgba(4, 190, 176, 0.16);
+  font-family: "Pretendard", sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #000;
+  cursor: pointer;
+}
+
+.v2-nav-page-back:active {
+  transform: scale(0.97);
 }
 
 .v2-home-screen .v2-greeting-line {
@@ -881,6 +974,87 @@ body {
   }
 }
 
+.v2-click-hint {
+  position: absolute;
+  top: 1197px;
+  left: 625px;
+  z-index: 3;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "Pretendard", sans-serif;
+  font-size: 34px;
+  font-weight: 500;
+  color: #1EA29E;
+  pointer-events: none;
+  animation: v2-click-hint-blink 1.35s ease-in-out 1.28s infinite;
+}
+
+.v2-click-hint-arrow {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 42px;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.v2-click-hint-arrow-left,
+.v2-click-hint-arrow-down {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v2-click-hint-arrow-left {
+  animation: v2-click-arrow-left 5.4s ease-in-out 1.28s infinite;
+}
+
+.v2-click-hint-arrow-down {
+  animation: v2-click-arrow-down 5.4s ease-in-out 1.28s infinite;
+}
+
+.v2-click-hint-text {
+  display: inline-block;
+  transform: translateY(3px);
+}
+
+@keyframes v2-click-hint-blink {
+  0%, 100% {
+    opacity: 0.36;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
+@keyframes v2-click-arrow-left {
+  0%, 49.9% {
+    opacity: 1;
+  }
+  12.5%, 37.5% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@keyframes v2-click-arrow-down {
+  0%, 49.9% {
+    opacity: 0;
+  }
+  50%, 100% {
+    opacity: 1;
+  }
+  62.5%, 87.5% {
+    opacity: 1;
+  }
+}
+
 .v2-suggestions {
   position: absolute;
   top: 1164px;
@@ -932,11 +1106,20 @@ body {
 
 .v2-suggestion-text {
   font-family: "Pretendard", sans-serif;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 44px;
   color: #000;
-  white-space: pre;
+  white-space: normal;
   line-height: 1.15;
+}
+
+.v2-suggestion-text strong {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.v2-suggestion-nowrap {
+  white-space: nowrap;
 }
 
 .v2-suggestion-item:first-child {
@@ -947,9 +1130,10 @@ body {
 .v2-suggestion-item:nth-child(2) {
   align-items: flex-start;
   box-sizing: border-box;
-  width: 773px;
+  width: fit-content;
+  max-width: var(--v2-content-width);
   min-height: 164px;
-  padding-right: 84px;
+  padding: 30px 60px 30px 42px;
 }
 
 .v2-suggestion-item:nth-child(2) .v2-suggestion-icon {
@@ -962,14 +1146,28 @@ body {
   transform: translateY(6px);
 }
 
-.v2-input-bar-img {
+.v2-input-bar-btn {
   position: absolute;
   top: 1445px;
   left: 50%;
   transform: translateX(-50%);
   width: calc(var(--v2-content-width) + 48px);
   height: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
   z-index: 2;
+  cursor: pointer;
+}
+
+.v2-input-bar-btn:active {
+  transform: translateX(-50%) scale(0.99);
+}
+
+.v2-input-bar-img {
+  display: block;
+  width: 100%;
+  height: auto;
   pointer-events: none;
 }
 
@@ -1183,7 +1381,7 @@ body {
 
 .gpt-result-product {
   margin: 0;
-  font-family: "Quiche Sans", sans-serif;
+  font-family: "Quiche Sans", "Pretendard", sans-serif;
   font-size: clamp(1.15rem, 3.4vw, 1.7rem);
   font-weight: 400;
   color: #007f78;
@@ -2774,7 +2972,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   width: var(--rs-name-width);
-  font-family: 'Quiche Sans', serif;
+  font-family: 'Quiche Sans', 'Pretendard', serif;
   font-size: var(--rs-name-font-size);
   font-weight: 500;
   font-style: normal;

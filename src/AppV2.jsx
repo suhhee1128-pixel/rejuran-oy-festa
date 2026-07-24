@@ -1,12 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const imgLogo        = "/logo.png";
 const imgMenuIcon    = "/icon_menu.svg";
-const imgChatIcon    = "/icon_chat.svg";
+const imgChatIcon    = "/icon_question.svg";
 const imgScienceFilled = "/icon_science_filled.svg";
 const imgScience     = "/icon_science.svg";
 const imgDecoImage   = "/deco.png";
 const imgEllipse     = "/ellipse.svg";
+
+const HeaderNavContext = createContext({
+  onMenu: null,
+  onChat: null,
+});
+
+const GREAT_MAGIC_TRANSITION_MS = 1150;
 
 /* ── Result screen assets ── */
 
@@ -359,6 +366,9 @@ function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) 
         trail.classList.add("home-blob-magic-trail--burst");
       };
       replayTrailRef.current = replayMagicTrail;
+      if (magicRef.current && magicBurstKey) {
+        requestAnimationFrame(replayMagicTrail);
+      }
       let rafId = 0;
       const animate = () => {
         const t = (performance.now() - startTime) * 0.001;
@@ -501,8 +511,18 @@ function SurveyUserBubble({ children, origin }) {
 }
 
 const suggestions = [
-  { icon: imgScience, text: "What is PDRN?", screen: "pdrn" },
-  { icon: imgScienceFilled, text: "What makes REJURAN's PDRN\ndifferent from other brands?", screen: "pdrn2" },
+  {
+    icon: imgScience,
+    text: "What is PDRN?",
+    screen: "pdrn",
+    label: <>What is <strong>PDRN</strong>?</>,
+  },
+  {
+    icon: imgScienceFilled,
+    text: "What makes REJURAN's PDRN\ndifferent from other brands?",
+    screen: "pdrn2",
+    label: <><span className="v2-suggestion-nowrap">What makes <strong>REJURAN's PDRN</strong></span><br />different from other brands?</>,
+  },
 ];
 
 const PDRN_ANSWER =
@@ -512,18 +532,44 @@ const PDRN_DIFF_ANSWER =
   "REJURAN uses pharmaceutical-grade PDRN with a clinically verified molecular weight optimized for skin absorption.\n\nUnlike other brands that use generic DNA extracts, REJURAN's PDRN is standardized through a patented purification process — ensuring consistent potency, safety, and regenerative efficacy in every product.";
 
 /* ── Shared Header ── */
-function Header({ onBack }) {
+function Header({ onBack, onMenu, onChat }) {
+  const headerNav = useContext(HeaderNavContext);
+  const handleMenu = onMenu || headerNav.onMenu;
+  const handleChat = onChat || headerNav.onChat;
+
   return (
-    <header className="v2-header" onClick={onBack} style={{ cursor: onBack ? "pointer" : "default" }}>
-      <img src={imgMenuIcon} alt="menu" className="v2-header-icon-left" />
-      <div className="v2-header-center">
+    <header className="v2-header">
+      <button
+        type="button"
+        className="v2-header-icon-btn v2-header-icon-btn-left"
+        onClick={handleMenu}
+        aria-label="Go to home"
+      >
+        <img src={imgMenuIcon} alt="" className="v2-header-icon-left" />
+      </button>
+      <button
+        type="button"
+        className="v2-header-center"
+        onClick={onBack}
+        style={{ cursor: onBack ? "pointer" : "default" }}
+        aria-label={onBack ? "Go back" : "Current experience"}
+      >
         <div className="v2-title-row">
-          <span className="v2-title">Chat REJURAN 8.1</span>
+          <span className="v2-title">
+            Chat <span className="v2-title-brand">REJURAN</span> 8.1
+          </span>
           <img src="/mdi_expand-more.png" alt="" className="v2-chevron" />
         </div>
         <span className="v2-subtitle">OLIVE YOUNG FESTA 2026</span>
-      </div>
-      <img src={imgChatIcon} alt="chat" className="v2-header-icon-right" />
+      </button>
+      <button
+        type="button"
+        className="v2-header-icon-btn v2-header-icon-btn-right"
+        onClick={handleChat}
+        aria-label="Open PDRN chat"
+      >
+        <img src={imgChatIcon} alt="" className="v2-header-icon-right" />
+      </button>
     </header>
   );
 }
@@ -1022,11 +1068,12 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
 }
 
 /* ── Analyzing Screen ── */
-function AnalyzingScreen({ onDone }) {
+function AnalyzingScreen({ onDone, hold = false }) {
   useEffect(() => {
+    if (hold) return undefined;
     const t = setTimeout(onDone, 7600);
     return () => clearTimeout(t);
-  }, [onDone]);
+  }, [hold, onDone]);
 
   return (
     <>
@@ -1218,9 +1265,19 @@ function HomeScreen({ onNavigate, onResult }) {
       </div>
 
       <div className="v2-greeting">
-        <p className="v2-greeting-line v2-greeting-line-1">Hi!</p>
-        <p className="v2-greeting-line v2-greeting-line-2">How's it going?</p>
+        <p className="v2-greeting-line v2-greeting-line-1">Welcome!</p>
+        <p className="v2-greeting-line v2-greeting-line-2">
+          Find your <strong>REJURAN match</strong>
+        </p>
       </div>
+
+      <p className="v2-click-hint">
+        <span className="v2-click-hint-arrow" aria-hidden="true">
+          <span className="v2-click-hint-arrow-left">←</span>
+          <span className="v2-click-hint-arrow-down">↓</span>
+        </span>
+        <span className="v2-click-hint-text">Click here!</span>
+      </p>
 
       <div className="v2-suggestions">
         {suggestions.map((s) => (
@@ -1231,12 +1288,19 @@ function HomeScreen({ onNavigate, onResult }) {
             onClick={() => s.screen && onNavigate(s.screen)}
           >
             <img src={s.icon} alt="" className="v2-suggestion-icon" />
-            <span className="v2-suggestion-text">{s.text}</span>
+            <span className="v2-suggestion-text">{s.label}</span>
           </button>
         ))}
       </div>
 
-      <img src="/bar.png" alt="input bar" className="v2-input-bar-img" />
+      <button
+        type="button"
+        className="v2-input-bar-btn"
+        onClick={() => onNavigate("pdrn")}
+        aria-label="Ask Chat REJURAN"
+      >
+        <img src="/bar.png" alt="" className="v2-input-bar-img" />
+      </button>
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
@@ -1420,9 +1484,32 @@ function GoodbyeScreen({ onHome }) {
   );
 }
 
+function NavPage({ type, onBack }) {
+  const isMenu = type === "menu";
+
+  return (
+    <>
+      <InteractiveBackground origin={isMenu ? "menu" : "chat"} />
+      <Header onBack={null} />
+
+      <section className={`v2-nav-page v2-nav-page--${type}`}>
+        <p className="v2-nav-page-kicker">
+          {isMenu ? "Menu" : "Chat"}
+        </p>
+        <h1 className="v2-nav-page-title">
+          {isMenu ? "Explore REJURAN" : "Ask REJURAN"}
+        </h1>
+        <button type="button" className="v2-nav-page-back" onClick={onBack}>
+          Back
+        </button>
+      </section>
+    </>
+  );
+}
+
 /* ── Root ── */
 function AppV2() {
-  const [screen, setScreen] = useState("home");
+  const [screen, setScreen] = useState("analyzing");
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
   const [product, setProduct] = useState("");
@@ -1443,6 +1530,11 @@ function AppV2() {
     ));
   }, [screen]);
 
+  useEffect(() => {
+    if (screen !== "great") return;
+    setSharedMagicBurstKey((key) => key + 1);
+  }, [screen]);
+
   useEffect(() => () => {
     if (greatMagicTimeoutRef.current) {
       clearTimeout(greatMagicTimeoutRef.current);
@@ -1459,12 +1551,13 @@ function AppV2() {
     setSharedMagicBurstKey((key) => key + 1);
     greatMagicTimeoutRef.current = setTimeout(() => {
       setIsGreatMagicBurst(false);
+      greatMagicTimeoutRef.current = null;
       setScreen("quiz1");
       // Keep blob at "great" position for one paint, then animate to "quiz1"
       requestAnimationFrame(() => {
         requestAnimationFrame(() => setBlobPos("quiz1"));
       });
-    }, 520);
+    }, GREAT_MAGIC_TRANSITION_MS);
   };
 
   const goBackToGreat = () => {
@@ -1479,10 +1572,34 @@ function AppV2() {
     });
   };
 
+  const headerNav = {
+    onMenu: () => {
+      if (greatMagicTimeoutRef.current) {
+        clearTimeout(greatMagicTimeoutRef.current);
+        greatMagicTimeoutRef.current = null;
+      }
+      setIsGreatMagicBurst(false);
+      setBlobPos("great");
+      setScreen("menu");
+    },
+    onChat: () => {
+      if (greatMagicTimeoutRef.current) {
+        clearTimeout(greatMagicTimeoutRef.current);
+        greatMagicTimeoutRef.current = null;
+      }
+      setIsGreatMagicBurst(false);
+      setBlobPos("great");
+      setScreen("chat-hub");
+    },
+  };
+
   return (
     <main className="app app-v2">
+      <HeaderNavContext.Provider value={headerNav}>
       <div className="portrait-layout">
         {screen === "home"  && <HomeScreen onNavigate={setScreen} onResult={(p) => { setProduct(p); setScreen("result"); }} />}
+        {screen === "menu" && <NavPage type="menu" onBack={() => setScreen("home")} />}
+        {screen === "chat-hub" && <NavPage type="chat" onBack={() => setScreen("home")} />}
         {screen === "pdrn"  && (
           <ChatScreen
             variant="pdrn"
@@ -1533,7 +1650,7 @@ function AppV2() {
           />
         )}
         {screen === "analyzing" && (
-          <AnalyzingScreen onDone={() => setScreen("result")} />
+          <AnalyzingScreen hold onDone={() => setScreen("result")} />
         )}
         {screen === "result" && (
           <ResultScreen
@@ -1550,11 +1667,12 @@ function AppV2() {
         {showBlob && (
           <BlobMedia
             className={`v2-shared-blob v2-shared-blob--${blobPos}`}
-            magic={screen === "great" && isGreatMagicBurst ? "strong" : false}
+            magic={screen === "great" ? (isGreatMagicBurst ? "strong" : true) : false}
             magicBurstKey={sharedMagicBurstKey}
           />
         )}
       </div>
+      </HeaderNavContext.Provider>
     </main>
   );
 }
