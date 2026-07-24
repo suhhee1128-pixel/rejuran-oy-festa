@@ -140,7 +140,7 @@ body {
     radial-gradient(circle at 50% var(--v2-analyzing-bg-y), rgba(93, 228, 214, 0.46) 0%, rgba(154, 244, 235, 0.40) 20%, rgba(221, 255, 251, 0.28) 38%, rgba(255, 255, 255, 0) 62%),
     radial-gradient(circle at 50% calc(var(--v2-analyzing-bg-y) + 5%), rgba(37, 207, 194, 0.24) 0%, rgba(176, 248, 240, 0.18) 28%, rgba(255, 255, 255, 0) 58%),
     radial-gradient(circle at 50% calc(var(--v2-analyzing-bg-y) + 11%), #eefdfa 0%, #f7fffd 48%, #ffffff 88%);
-  animation: v2-analyzing-bg-center-shift 2.25s cubic-bezier(0.22, 0.72, 0.18, 1) 1.15s both;
+  animation: v2-analyzing-bg-center-shift 2.25s cubic-bezier(0.22, 0.72, 0.18, 1) 1.35s both;
 }
 
 @keyframes v2-analyzing-bg-center-shift {
@@ -196,13 +196,13 @@ body {
 .v2-fluid-bg--analyzing .v2-fluid-sheen::before {
   opacity: 0.24;
   background: radial-gradient(circle at 50% 34%, rgba(255,255,255,0.68), rgba(204,242,238,0.18) 26%, rgba(255,255,255,0) 58%);
-  animation: v2-analyzing-top-sheen-out 1.55s cubic-bezier(0.2, 0.76, 0.18, 1) 1.2s both;
+  animation: v2-analyzing-top-sheen-out 1.55s cubic-bezier(0.2, 0.76, 0.18, 1) 1.35s both;
 }
 
 .v2-fluid-bg--analyzing .v2-fluid-sheen::after {
   opacity: 0;
   background: radial-gradient(circle at 50% 62%, rgba(40,221,207,0.30), rgba(153,247,238,0.26) 22%, rgba(226,255,251,0.22) 42%, rgba(255,255,255,0) 60%);
-  animation: v2-analyzing-card-sheen-in 1.55s cubic-bezier(0.2, 0.76, 0.18, 1) 1.2s both;
+  animation: v2-analyzing-card-sheen-in 1.55s cubic-bezier(0.2, 0.76, 0.18, 1) 1.35s both;
 }
 
 @keyframes v2-analyzing-top-sheen-out {
@@ -248,7 +248,7 @@ body {
 }
 
 .v2-fluid-bg--analyzing .v2-wave-field {
-  animation: v2-analyzing-wave-field-shift 1.35s cubic-bezier(0.2, 0.76, 0.18, 1) 1.6s both;
+  animation: v2-analyzing-wave-field-shift 1.35s cubic-bezier(0.2, 0.76, 0.18, 1) 1.95s both;
 }
 
 @keyframes v2-analyzing-wave-field-shift {
@@ -2468,7 +2468,7 @@ body {
   align-items: center;
   z-index: 5;
   opacity: 0;
-  animation: v2-analyzing-dots-arrive 1.65s cubic-bezier(0.2, 0.76, 0.18, 1) 1.25s both;
+  animation: v2-analyzing-dots-arrive 1.65s cubic-bezier(0.2, 0.76, 0.18, 1) 2.15s both;
 }
 
 /* Blob in analyzing screen — large, centered */
@@ -2481,7 +2481,7 @@ body {
   z-index: 4;
   opacity: 0;
   transform-origin: center center;
-  animation: v2-analyzing-blob-arrive 2s cubic-bezier(0.2, 0.76, 0.18, 1) 0.08s both;
+  animation: v2-analyzing-blob-arrive 2.75s cubic-bezier(0.2, 0.76, 0.18, 1) 0.08s both;
 }
 .v2-analyzing-blob img,
 .v2-analyzing-blob video,
@@ -2503,7 +2503,7 @@ body {
   pointer-events: none;
   overflow: visible;
   opacity: 0;
-  animation: v2-loading-card-stage-in 0.55s ease 1.95s both;
+  animation: v2-loading-card-stage-in 0.55s ease 2.55s both;
 }
 
 .v2-card-wave-focus {
@@ -2527,7 +2527,7 @@ body {
       rgba(255,255,255,0) 74%
     );
   filter: blur(40px);
-  animation: v2-card-wave-focus-in 1.35s cubic-bezier(0.2, 0.76, 0.18, 1) 2.05s both;
+  animation: v2-card-wave-focus-in 1.35s cubic-bezier(0.2, 0.76, 0.18, 1) 2.65s both;
 }
 
 @keyframes v2-card-wave-focus-in {
@@ -2566,13 +2566,13 @@ body {
     transform: translateX(-50%) translateY(28px) scale(0.66);
     filter: blur(10px) saturate(0.9);
   }
-  24% {
+  13% {
     opacity: 1;
     top: 548px;
     transform: translateX(-50%) translateY(0) scale(0.98);
     filter: blur(0) saturate(1);
   }
-  44% {
+  62% {
     opacity: 1;
     top: 548px;
     transform: translateX(-50%) translateY(0) scale(0.98);
@@ -2662,7 +2662,7 @@ body {
   text-align: center;
   z-index: 5;
   opacity: 0;
-  animation: v2-analyzing-text-flow 1.55s cubic-bezier(0.2, 0.76, 0.18, 1) 0.22s both;
+  animation: v2-analyzing-text-flow 2.55s cubic-bezier(0.2, 0.76, 0.18, 1) 0.22s both;
 }
 .v2-analyzing-title {
   font-family: 'Pretendard', sans-serif;
@@ -2690,13 +2690,13 @@ body {
     opacity: 0;
     transform: translateX(-50%) translateY(22px);
   }
-  24%, 68% {
+  22%, 64% {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
   100% {
     opacity: 0;
-    transform: translateX(-50%) translateY(-24px);
+    transform: translateX(-50%) translateY(-16px);
   }
 }
 

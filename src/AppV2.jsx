@@ -199,13 +199,14 @@ function InteractiveBackground({ chat = false, origin = "home", still = false, s
   );
 }
 
-function BlobMedia({ className = "", alt = "", magic = false, magicBurstKey = 0 }) {
+function BlobMedia({ className = "", alt = "", magic = false, magicBurstKey = 0, motion = "default" }) {
   return (
     <Blob3D
       className={`blob-video${className ? ` ${className}` : ""}`}
       alt={alt}
       magic={magic}
       magicBurstKey={magicBurstKey}
+      motion={motion}
     />
   );
 }
@@ -249,7 +250,7 @@ function getMagicSparkStyle(index) {
   };
 }
 
-function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) {
+function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0, motion = "default" }) {
   const mountRef = useRef(null);
   const trailRef = useRef(null);
   const magicRef = useRef(magic);
@@ -391,7 +392,7 @@ function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) 
         positions.needsUpdate = true;
         bodyGeometry.computeVertexNormals();
 
-        if (!spinStart && t >= nextSpinAt) {
+        if (motion !== "calm" && !spinStart && t >= nextSpinAt) {
           spinStart = t;
           if (magicRef.current) replayMagicTrail();
         }
@@ -408,7 +409,7 @@ function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) 
         }
 
         const idleY = Math.sin(t * 1.35) * 0.085;
-        const idleWobble = spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
+        const idleWobble = motion === "calm" ? 0 : spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
         const jumpArc = spinStart ? Math.sin(spinProgress * Math.PI) : 0;
         const rebound = spinStart ? Math.sin(pulseAt(spinProgress, 0.93, 0.07) * Math.PI) * 0.035 : 0;
         const jumpY = spinStart ? jumpArc * 0.72 + rebound : 0;
@@ -1071,7 +1072,7 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
 function AnalyzingScreen({ onDone, hold = false }) {
   useEffect(() => {
     if (hold) return undefined;
-    const t = setTimeout(onDone, 7600);
+    const t = setTimeout(onDone, 9400);
     return () => clearTimeout(t);
   }, [hold, onDone]);
 
@@ -1090,7 +1091,7 @@ function AnalyzingScreen({ onDone, hold = false }) {
 
       {/* Large centered blob */}
       <div className="v2-analyzing-blob">
-        <BlobMedia alt="REJURAN character" magic="strong" />
+        <BlobMedia alt="REJURAN character" motion="calm" />
       </div>
 
       <div className="v2-loading-card-stage" aria-hidden="true">
