@@ -1,0 +1,1 @@
+import{t as e}from"./index-CWdOIxHt.js";import{t}from"./Object3D-CdrECROS.js";var n=e({Group:()=>r}),r=class extends t{constructor(){super(),this.isGroup=!0,this.type=`Group`}};export{n,r as t};

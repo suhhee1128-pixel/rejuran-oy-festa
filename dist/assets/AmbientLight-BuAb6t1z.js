@@ -1,0 +1,1 @@
+import{t as e}from"./Light-Dorwsn4t.js";var t=class extends e{constructor(e,t){super(e,t),this.isAmbientLight=!0,this.type=`AmbientLight`}};export{t as AmbientLight};
