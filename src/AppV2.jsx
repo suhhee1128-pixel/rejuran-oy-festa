@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
-const imgBlob        = "/blob.png";
-const videoBlob      = "/blob-blinking.mp4";
 const imgLogo        = "/logo.png";
 const imgMenuIcon    = "/icon_menu.svg";
 const imgChatIcon    = "/icon_chat.svg";
@@ -53,7 +49,103 @@ const blobFragmentShader = `
   }
 `;
 
-function createEyeTexture() {
+let threeBlobModulesPromise;
+
+function loadThreeBlobModules() {
+  if (!threeBlobModulesPromise) {
+    threeBlobModulesPromise = Promise.all([
+      import("three/src/renderers/WebGLRenderer.js"),
+      import("three/src/scenes/Scene.js"),
+      import("three/src/cameras/PerspectiveCamera.js"),
+      import("three/src/objects/Group.js"),
+      import("three/src/lights/AmbientLight.js"),
+      import("three/src/lights/DirectionalLight.js"),
+      import("three/src/materials/ShaderMaterial.js"),
+      import("three/src/materials/SpriteMaterial.js"),
+      import("three/src/objects/Mesh.js"),
+      import("three/src/objects/Sprite.js"),
+      import("three/src/textures/CanvasTexture.js"),
+      import("three/src/geometries/BoxGeometry.js"),
+      import("three/src/math/Vector3.js"),
+      import("three/src/constants.js"),
+    ]).then(([
+      { WebGLRenderer },
+      { Scene },
+      { PerspectiveCamera },
+      { Group },
+      { AmbientLight },
+      { DirectionalLight },
+      { ShaderMaterial },
+      { SpriteMaterial },
+      { Mesh },
+      { Sprite },
+      { CanvasTexture },
+      { BoxGeometry },
+      { Vector3 },
+      { AdditiveBlending, SRGBColorSpace },
+    ]) => ({
+      AdditiveBlending,
+      AmbientLight,
+      BoxGeometry,
+      CanvasTexture,
+      DirectionalLight,
+      Group,
+      Mesh,
+      PerspectiveCamera,
+      Scene,
+      ShaderMaterial,
+      Sprite,
+      SpriteMaterial,
+      SRGBColorSpace,
+      Vector3,
+      WebGLRenderer,
+    }));
+  }
+
+  return threeBlobModulesPromise;
+}
+
+function createRoundedCubeGeometry(THREE) {
+  const width = 2.18;
+  const height = 2.18;
+  const depth = 2.18;
+  const segments = 32;
+  const radius = 0.74;
+  const totalSegments = segments * 2 + 1;
+  const baseGeometry = new THREE.BoxGeometry(1, 1, 1, totalSegments, totalSegments, totalSegments);
+  const geometry = baseGeometry.toNonIndexed();
+  baseGeometry.dispose();
+
+  const position = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+  const box = new THREE.Vector3(width, height, depth).divideScalar(2).subScalar(radius);
+  const positions = geometry.attributes.position.array;
+  const normals = geometry.attributes.normal.array;
+  const halfSegmentSize = 0.5 / totalSegments;
+
+  for (let i = 0; i < positions.length; i += 3) {
+    position.fromArray(positions, i);
+    normal.copy(position);
+    normal.x -= Math.sign(normal.x) * halfSegmentSize;
+    normal.y -= Math.sign(normal.y) * halfSegmentSize;
+    normal.z -= Math.sign(normal.z) * halfSegmentSize;
+    normal.normalize();
+
+    positions[i] = box.x * Math.sign(position.x) + normal.x * radius;
+    positions[i + 1] = box.y * Math.sign(position.y) + normal.y * radius;
+    positions[i + 2] = box.z * Math.sign(position.z) + normal.z * radius;
+
+    normals[i] = normal.x;
+    normals[i + 1] = normal.y;
+    normals[i + 2] = normal.z;
+  }
+
+  geometry.attributes.position.needsUpdate = true;
+  geometry.attributes.normal.needsUpdate = true;
+  return geometry;
+}
+
+function createEyeTexture(THREE) {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
   canvas.height = 256;
@@ -100,190 +192,231 @@ function InteractiveBackground({ chat = false, origin = "home", still = false, s
   );
 }
 
-function BlobMedia({ className = "", alt = "" }) {
+function BlobMedia({ className = "", alt = "", magic = false, magicBurstKey = 0 }) {
   return (
-    <video
+    <Blob3D
       className={`blob-video${className ? ` ${className}` : ""}`}
-      src={videoBlob}
-      poster={imgBlob}
-      aria-label={alt}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
+      alt={alt}
+      magic={magic}
+      magicBurstKey={magicBurstKey}
     />
   );
 }
 
-function HomeBlob3D({ className = "", alt = "" }) {
+function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0 }) {
   const mountRef = useRef(null);
-  const [trailKey, setTrailKey] = useState(1);
+  const trailRef = useRef(null);
+  const magicRef = useRef(magic);
+  const replayTrailRef = useRef(() => {});
+  const magicClass = magic === "strong"
+    ? " home-blob-3d--magic-strong"
+    : magic
+      ? " home-blob-3d--magic"
+      : "";
+
+  useEffect(() => {
+    magicRef.current = magic;
+  }, [magic]);
+
+  useEffect(() => {
+    if (!magic || !magicBurstKey) return undefined;
+    const rafId = requestAnimationFrame(() => replayTrailRef.current());
+    return () => cancelAnimationFrame(rafId);
+  }, [magic, magicBurstKey]);
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return undefined;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    camera.position.set(0, 0, 9.6);
+    let cleanupBlob = () => {};
+    let isDisposed = false;
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
-    });
-    renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    mount.appendChild(renderer.domElement);
+    loadThreeBlobModules().then((THREE) => {
+      if (isDisposed || !mount.isConnected) return;
 
-    const blobGroup = new THREE.Group();
-    blobGroup.scale.set(1, 1, 1);
-    scene.add(blobGroup);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+      camera.position.set(0, 0, 9.6);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.35);
-    scene.add(ambient);
+      const renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setClearColor(0x000000, 0);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      mount.appendChild(renderer.domElement);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.9);
-    keyLight.position.set(-2.8, 3.6, 4.8);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    rimLight.position.set(3.2, 2.4, 3.6);
-    scene.add(rimLight);
-
-    const bodyGeometry = new RoundedBoxGeometry(2.18, 2.18, 2.18, 32, 0.74);
-    const basePositions = bodyGeometry.attributes.position.array.slice();
-    const bodyMaterial = new THREE.ShaderMaterial({
-      vertexShader: blobVertexShader,
-      fragmentShader: blobFragmentShader,
-    });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.scale.set(1, 1, 1);
-    blobGroup.add(body);
-
-    const eyeTexture = createEyeTexture();
-    const eyeMaterial = new THREE.SpriteMaterial({
-      map: eyeTexture,
-      transparent: true,
-      opacity: 0.96,
-      depthWrite: false,
-      depthTest: true,
-      blending: THREE.AdditiveBlending,
-    });
-    const leftEye = new THREE.Sprite(eyeMaterial);
-    leftEye.position.set(-0.39, -0.02, 1.18);
-    leftEye.scale.set(0.38, 0.58, 1);
-    blobGroup.add(leftEye);
-
-    const rightEye = new THREE.Sprite(eyeMaterial);
-    rightEye.position.copy(leftEye.position);
-    rightEye.position.x = 0.39;
-    rightEye.scale.copy(leftEye.scale);
-    blobGroup.add(rightEye);
-
-    const resize = () => {
-      const width = mount.clientWidth || 194;
-      const height = mount.clientHeight || 197;
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    };
-    resize();
-
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(mount);
-
-    const startTime = performance.now();
-    let spinStart = 0;
-    let nextSpinAt = 1.8;
-    const spinDuration = 1.85;
-    const smooth = (value) => value * value * (3 - 2 * value);
-    const pulseAt = (value, center, width) => Math.max(0, 1 - Math.abs(value - center) / width);
-    let rafId = 0;
-    const animate = () => {
-      const t = (performance.now() - startTime) * 0.001;
-      const positions = bodyGeometry.attributes.position;
-
-      for (let i = 0; i < positions.count; i += 1) {
-        const index = i * 3;
-        const x = basePositions[index];
-        const y = basePositions[index + 1];
-        const z = basePositions[index + 2];
-        const pulse =
-          1 +
-          Math.sin(x * 3.1 + t * 1.35) * 0.01 +
-          Math.sin(y * 4.4 + t * 1.05) * 0.008 +
-          Math.sin(z * 5.3 + t * 1.18) * 0.006;
-
-        positions.setXYZ(i, x * pulse, y * pulse, z * pulse);
-      }
-
-      positions.needsUpdate = true;
-      bodyGeometry.computeVertexNormals();
-
-      if (!spinStart && t >= nextSpinAt) {
-        spinStart = t;
-        setTrailKey((key) => key + 1);
-      }
-
-      let spinProgress = 0;
-      if (spinStart) {
-        spinProgress = Math.min((t - spinStart) / spinDuration, 1);
-
-        if (spinProgress >= 1) {
-          spinStart = 0;
-          nextSpinAt = t + 2.3 + Math.random() * 3.2;
-          spinProgress = 0;
-        }
-      }
-
-      const idleY = Math.sin(t * 1.35) * 0.085;
-      const idleWobble = spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
-      const jumpArc = spinStart ? Math.sin(spinProgress * Math.PI) : 0;
-      const rebound = spinStart ? Math.sin(pulseAt(spinProgress, 0.93, 0.07) * Math.PI) * 0.035 : 0;
-      const jumpY = spinStart ? jumpArc * 0.54 + rebound : 0;
-      const spinTurn = spinStart ? smooth(spinProgress) * Math.PI * 2 : 0;
-
+      const blobGroup = new THREE.Group();
       blobGroup.scale.set(1, 1, 1);
-      const rotationY = spinTurn + idleWobble;
-      const frontVisibility = Math.max(0, Math.cos(rotationY));
-      eyeMaterial.opacity = 0.96 * smooth(Math.min(frontVisibility * 1.35, 1));
+      scene.add(blobGroup);
 
-      blobGroup.rotation.y = rotationY;
-      blobGroup.rotation.x = Math.sin(t * 0.9) * 0.02 - jumpArc * 0.035;
-      blobGroup.position.y = -0.12 + idleY + jumpY;
+      const ambient = new THREE.AmbientLight(0xffffff, 1.35);
+      scene.add(ambient);
 
-      renderer.render(scene, camera);
-      rafId = requestAnimationFrame(animate);
-    };
-    animate();
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.9);
+      keyLight.position.set(-2.8, 3.6, 4.8);
+      scene.add(keyLight);
+
+      const rimLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      rimLight.position.set(3.2, 2.4, 3.6);
+      scene.add(rimLight);
+
+      const bodyGeometry = createRoundedCubeGeometry(THREE);
+      const basePositions = bodyGeometry.attributes.position.array.slice();
+      const bodyMaterial = new THREE.ShaderMaterial({
+        vertexShader: blobVertexShader,
+        fragmentShader: blobFragmentShader,
+      });
+      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      body.scale.set(1, 1, 1);
+      blobGroup.add(body);
+
+      const eyeTexture = createEyeTexture(THREE);
+      const eyeMaterial = new THREE.SpriteMaterial({
+        map: eyeTexture,
+        transparent: true,
+        opacity: 0.96,
+        depthWrite: false,
+        depthTest: true,
+        blending: THREE.AdditiveBlending,
+      });
+      const leftEye = new THREE.Sprite(eyeMaterial);
+      leftEye.position.set(-0.39, -0.02, 1.18);
+      leftEye.scale.set(0.38, 0.58, 1);
+      blobGroup.add(leftEye);
+
+      const rightEye = new THREE.Sprite(eyeMaterial);
+      rightEye.position.copy(leftEye.position);
+      rightEye.position.x = 0.39;
+      rightEye.scale.copy(leftEye.scale);
+      blobGroup.add(rightEye);
+
+      const resize = () => {
+        const width = mount.clientWidth || 194;
+        const height = mount.clientHeight || 197;
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      };
+      resize();
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(mount);
+
+      const startTime = performance.now();
+      let spinStart = 0;
+      let nextSpinAt = 1.35;
+      const spinDuration = 1.85;
+      const smooth = (value) => value * value * (3 - 2 * value);
+      const pulseAt = (value, center, width) => Math.max(0, 1 - Math.abs(value - center) / width);
+      const replayMagicTrail = () => {
+        const trail = trailRef.current;
+        if (!trail) return;
+
+        [trail, ...trail.querySelectorAll("*")].forEach((element) => {
+          element.getAnimations().forEach((animation) => {
+            animation.cancel();
+            animation.play();
+          });
+        });
+      };
+      replayTrailRef.current = replayMagicTrail;
+      let rafId = 0;
+      const animate = () => {
+        const t = (performance.now() - startTime) * 0.001;
+        const positions = bodyGeometry.attributes.position;
+
+        for (let i = 0; i < positions.count; i += 1) {
+          const index = i * 3;
+          const x = basePositions[index];
+          const y = basePositions[index + 1];
+          const z = basePositions[index + 2];
+          const pulse =
+            1 +
+            Math.sin(x * 3.1 + t * 1.35) * 0.01 +
+            Math.sin(y * 4.4 + t * 1.05) * 0.008 +
+            Math.sin(z * 5.3 + t * 1.18) * 0.006;
+
+          positions.setXYZ(i, x * pulse, y * pulse, z * pulse);
+        }
+
+        positions.needsUpdate = true;
+        bodyGeometry.computeVertexNormals();
+
+        if (!spinStart && t >= nextSpinAt) {
+          spinStart = t;
+          if (magicRef.current) replayMagicTrail();
+        }
+
+        let spinProgress = 0;
+        if (spinStart) {
+          spinProgress = Math.min((t - spinStart) / spinDuration, 1);
+
+          if (spinProgress >= 1) {
+            spinStart = 0;
+            nextSpinAt = t + 1.25 + Math.random() * 2.1;
+            spinProgress = 0;
+          }
+        }
+
+        const idleY = Math.sin(t * 1.35) * 0.085;
+        const idleWobble = spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
+        const jumpArc = spinStart ? Math.sin(spinProgress * Math.PI) : 0;
+        const rebound = spinStart ? Math.sin(pulseAt(spinProgress, 0.93, 0.07) * Math.PI) * 0.035 : 0;
+        const jumpY = spinStart ? jumpArc * 0.72 + rebound : 0;
+        const spinTurn = spinStart ? smooth(spinProgress) * Math.PI * 2 : 0;
+
+        blobGroup.scale.set(1, 1, 1);
+        const rotationY = spinTurn + idleWobble;
+        const frontVisibility = Math.max(0, Math.cos(rotationY));
+        eyeMaterial.opacity = 0.96 * smooth(Math.min(frontVisibility * 1.35, 1));
+
+        blobGroup.rotation.y = rotationY;
+        blobGroup.rotation.x = Math.sin(t * 0.9) * 0.02 - jumpArc * 0.035;
+        blobGroup.position.y = -0.12 + idleY + jumpY;
+
+        renderer.render(scene, camera);
+        rafId = requestAnimationFrame(animate);
+      };
+      animate();
+
+      cleanupBlob = () => {
+        cancelAnimationFrame(rafId);
+        replayTrailRef.current = () => {};
+        resizeObserver.disconnect();
+        if (renderer.domElement.parentNode === mount) {
+          mount.removeChild(renderer.domElement);
+        }
+        bodyGeometry.dispose();
+        bodyMaterial.dispose();
+        eyeTexture.dispose();
+        eyeMaterial.dispose();
+        renderer.dispose();
+      };
+    });
 
     return () => {
-      cancelAnimationFrame(rafId);
-      resizeObserver.disconnect();
-      mount.removeChild(renderer.domElement);
-      bodyGeometry.dispose();
-      bodyMaterial.dispose();
-      eyeTexture.dispose();
-      eyeMaterial.dispose();
-      renderer.dispose();
+      isDisposed = true;
+      cleanupBlob();
     };
   }, []);
 
   return (
     <div
       ref={mountRef}
-      className={`home-blob-3d${className ? ` ${className}` : ""}`}
+      className={`home-blob-3d${magicClass}${className ? ` ${className}` : ""}`}
       role="img"
       aria-label={alt}
     >
-      <span key={trailKey} className="home-blob-magic-trail" aria-hidden="true">
-        {Array.from({ length: 28 }, (_, index) => (
-          <i key={index} />
-        ))}
-      </span>
+      {magic && (
+        <span ref={trailRef} className="home-blob-magic-trail" aria-hidden="true">
+          {Array.from({ length: 48 }, (_, index) => (
+            <i key={index} />
+          ))}
+        </span>
+      )}
     </div>
   );
 }
@@ -874,7 +1007,7 @@ function AnalyzingScreen({ onDone }) {
 
       {/* Large centered blob */}
       <div className="v2-analyzing-blob">
-        <BlobMedia alt="REJURAN character" />
+        <BlobMedia alt="REJURAN character" magic="strong" />
       </div>
 
       <div className="v2-loading-card-stage" aria-hidden="true">
@@ -1045,7 +1178,7 @@ function HomeScreen({ onNavigate, onResult }) {
       </div>
 
       <div className="v2-blob-wrap">
-        <HomeBlob3D className="v2-blob" alt="REJURAN character" />
+        <BlobMedia className="v2-blob" alt="REJURAN character" magic />
       </div>
 
       <div className="v2-greeting">
@@ -1166,7 +1299,7 @@ function ResultScreen({ product, onRestart, onNext }) {
           <div className="rs-result-scroll-inner">
             {/* Blob + speech bubble */}
             <div className="rs-blob-clip">
-              <BlobMedia />
+              <BlobMedia magic="strong" />
             </div>
             <div className="rs-speech-wrap">
               <span className="rs-speech-text">Here's your match!</span>
@@ -1232,7 +1365,7 @@ function GoodbyeScreen({ onHome }) {
 
       {/* Large centered blob */}
       <div className="gb-blob-wrap">
-        <BlobMedia />
+        <BlobMedia magic="strong" />
       </div>
 
       {/* Text */}
@@ -1259,6 +1392,7 @@ function AppV2() {
   const [viewedPdrnScreens, setViewedPdrnScreens] = useState([]);
   const [skinAnswerOrigin, setSkinAnswerOrigin] = useState(null);
   const [concernAnswerOrigin, setConcernAnswerOrigin] = useState(null);
+  const [sharedMagicBurstKey, setSharedMagicBurstKey] = useState(0);
   // blobPos trails screen by one frame so the CSS transition always fires
   const [blobPos, setBlobPos] = useState("great");
   const showBlob = screen === "great" || screen === "quiz1";
@@ -1271,6 +1405,7 @@ function AppV2() {
   }, [screen]);
 
   const goToQuiz = () => {
+    setSharedMagicBurstKey((key) => key + 1);
     setScreen("quiz1");
     // Keep blob at "great" position for one paint, then animate to "quiz1"
     requestAnimationFrame(() => {
@@ -1356,6 +1491,8 @@ function AppV2() {
         {showBlob && (
           <BlobMedia
             className={`v2-shared-blob v2-shared-blob--${blobPos}`}
+            magic={screen === "quiz1" ? "strong" : false}
+            magicBurstKey={sharedMagicBurstKey}
           />
         )}
       </div>
