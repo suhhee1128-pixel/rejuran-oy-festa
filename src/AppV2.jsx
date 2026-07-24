@@ -118,6 +118,7 @@ function BlobMedia({ className = "", alt = "" }) {
 
 function HomeBlob3D({ className = "", alt = "" }) {
   const mountRef = useRef(null);
+  const [trailKey, setTrailKey] = useState(1);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -224,6 +225,7 @@ function HomeBlob3D({ className = "", alt = "" }) {
 
       if (!spinStart && t >= nextSpinAt) {
         spinStart = t;
+        setTrailKey((key) => key + 1);
       }
 
       let spinProgress = 0;
@@ -276,7 +278,13 @@ function HomeBlob3D({ className = "", alt = "" }) {
       className={`home-blob-3d${className ? ` ${className}` : ""}`}
       role="img"
       aria-label={alt}
-    />
+    >
+      <span key={trailKey} className="home-blob-magic-trail" aria-hidden="true">
+        {Array.from({ length: 28 }, (_, index) => (
+          <i key={index} />
+        ))}
+      </span>
+    </div>
   );
 }
 
