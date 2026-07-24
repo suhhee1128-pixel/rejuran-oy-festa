@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
-const imgBlob        = "/blob.png";
-const videoBlob      = "/blob-blinking.mp4";
 const imgLogo        = "/logo.png";
 const imgMenuIcon    = "/icon_menu.svg";
-const imgChatIcon    = "/icon_chat.svg";
+const imgChatIcon    = "/icon_question.svg";
 const imgScienceFilled = "/icon_science_filled.svg";
 const imgScience     = "/icon_science.svg";
 const imgDecoImage   = "/deco.png";
 const imgEllipse     = "/ellipse.svg";
+
+const HeaderNavContext = createContext({
+  onMenu: null,
+  onChat: null,
+});
+
+const GREAT_MAGIC_TRANSITION_MS = 1150;
 
 /* ── Result screen assets ── */
 
@@ -53,7 +56,103 @@ const blobFragmentShader = `
   }
 `;
 
-function createEyeTexture() {
+let threeBlobModulesPromise;
+
+function loadThreeBlobModules() {
+  if (!threeBlobModulesPromise) {
+    threeBlobModulesPromise = Promise.all([
+      import("three/src/renderers/WebGLRenderer.js"),
+      import("three/src/scenes/Scene.js"),
+      import("three/src/cameras/PerspectiveCamera.js"),
+      import("three/src/objects/Group.js"),
+      import("three/src/lights/AmbientLight.js"),
+      import("three/src/lights/DirectionalLight.js"),
+      import("three/src/materials/ShaderMaterial.js"),
+      import("three/src/materials/SpriteMaterial.js"),
+      import("three/src/objects/Mesh.js"),
+      import("three/src/objects/Sprite.js"),
+      import("three/src/textures/CanvasTexture.js"),
+      import("three/src/geometries/BoxGeometry.js"),
+      import("three/src/math/Vector3.js"),
+      import("three/src/constants.js"),
+    ]).then(([
+      { WebGLRenderer },
+      { Scene },
+      { PerspectiveCamera },
+      { Group },
+      { AmbientLight },
+      { DirectionalLight },
+      { ShaderMaterial },
+      { SpriteMaterial },
+      { Mesh },
+      { Sprite },
+      { CanvasTexture },
+      { BoxGeometry },
+      { Vector3 },
+      { AdditiveBlending, SRGBColorSpace },
+    ]) => ({
+      AdditiveBlending,
+      AmbientLight,
+      BoxGeometry,
+      CanvasTexture,
+      DirectionalLight,
+      Group,
+      Mesh,
+      PerspectiveCamera,
+      Scene,
+      ShaderMaterial,
+      Sprite,
+      SpriteMaterial,
+      SRGBColorSpace,
+      Vector3,
+      WebGLRenderer,
+    }));
+  }
+
+  return threeBlobModulesPromise;
+}
+
+function createRoundedCubeGeometry(THREE) {
+  const width = 2.18;
+  const height = 2.18;
+  const depth = 2.18;
+  const segments = 32;
+  const radius = 0.74;
+  const totalSegments = segments * 2 + 1;
+  const baseGeometry = new THREE.BoxGeometry(1, 1, 1, totalSegments, totalSegments, totalSegments);
+  const geometry = baseGeometry.toNonIndexed();
+  baseGeometry.dispose();
+
+  const position = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+  const box = new THREE.Vector3(width, height, depth).divideScalar(2).subScalar(radius);
+  const positions = geometry.attributes.position.array;
+  const normals = geometry.attributes.normal.array;
+  const halfSegmentSize = 0.5 / totalSegments;
+
+  for (let i = 0; i < positions.length; i += 3) {
+    position.fromArray(positions, i);
+    normal.copy(position);
+    normal.x -= Math.sign(normal.x) * halfSegmentSize;
+    normal.y -= Math.sign(normal.y) * halfSegmentSize;
+    normal.z -= Math.sign(normal.z) * halfSegmentSize;
+    normal.normalize();
+
+    positions[i] = box.x * Math.sign(position.x) + normal.x * radius;
+    positions[i + 1] = box.y * Math.sign(position.y) + normal.y * radius;
+    positions[i + 2] = box.z * Math.sign(position.z) + normal.z * radius;
+
+    normals[i] = normal.x;
+    normals[i + 1] = normal.y;
+    normals[i + 2] = normal.z;
+  }
+
+  geometry.attributes.position.needsUpdate = true;
+  geometry.attributes.normal.needsUpdate = true;
+  return geometry;
+}
+
+function createEyeTexture(THREE) {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
   canvas.height = 256;
@@ -100,190 +199,271 @@ function InteractiveBackground({ chat = false, origin = "home", still = false, s
   );
 }
 
-function BlobMedia({ className = "", alt = "" }) {
+function BlobMedia({ className = "", alt = "", magic = false, magicBurstKey = 0, motion = "default" }) {
   return (
-    <video
+    <Blob3D
       className={`blob-video${className ? ` ${className}` : ""}`}
-      src={videoBlob}
-      poster={imgBlob}
-      aria-label={alt}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
+      alt={alt}
+      magic={magic}
+      magicBurstKey={magicBurstKey}
+      motion={motion}
     />
   );
 }
 
-function HomeBlob3D({ className = "", alt = "" }) {
+function MagicTrail({ className = "" }) {
+  return (
+    <span
+      className={`home-blob-magic-trail home-blob-magic-trail--burst${className ? ` ${className}` : ""}`}
+      aria-hidden="true"
+    >
+      {Array.from({ length: 84 }, (_, index) => (
+        <i key={index} style={getMagicSparkStyle(index)} />
+      ))}
+    </span>
+  );
+}
+
+function getMagicSparkStyle(index) {
+  const angle = ((index * 137.508) % 360) * (Math.PI / 180);
+  const ring = index % 6;
+  const baseRadius = [118, 162, 214, 276, 338, 404][ring];
+  const radiusJitter = ((index * 29) % 53) - 26;
+  const radius = baseRadius + radiusJitter;
+  const drift = Math.sin(index * 12.9898) * 18;
+  const x = Math.cos(angle) * radius + Math.cos(angle * 2.35) * drift;
+  const y = Math.sin(angle) * radius * 0.8 + Math.sin(angle * 1.72) * drift;
+  const size = index % 17 === 0 ? 5.2 : index % 11 === 0 ? 4.4 : index % 5 === 0 ? 3.7 : 3.1;
+  const delay = (index % 30) * 0.014;
+
+  return {
+    "--spark-near-x": `${(x * 0.34).toFixed(1)}px`,
+    "--spark-near-y": `${(y * 0.34).toFixed(1)}px`,
+    "--spark-mid-x": `${(x * 0.56).toFixed(1)}px`,
+    "--spark-mid-y": `${(y * 0.56).toFixed(1)}px`,
+    "--spark-far-x": `${(x * 0.86).toFixed(1)}px`,
+    "--spark-far-y": `${(y * 0.86).toFixed(1)}px`,
+    "--spark-x": `${x.toFixed(1)}px`,
+    "--spark-y": `${y.toFixed(1)}px`,
+    "--spark-size": `${size}px`,
+    "--spark-delay": `${delay.toFixed(2)}s`,
+  };
+}
+
+function Blob3D({ className = "", alt = "", magic = false, magicBurstKey = 0, motion = "default" }) {
   const mountRef = useRef(null);
-  const [trailKey, setTrailKey] = useState(1);
+  const trailRef = useRef(null);
+  const magicRef = useRef(magic);
+  const replayTrailRef = useRef(() => {});
+  const magicClass = magic === "strong"
+    ? " home-blob-3d--magic-strong"
+    : magic
+      ? " home-blob-3d--magic"
+      : "";
+
+  useEffect(() => {
+    magicRef.current = magic;
+  }, [magic]);
+
+  useEffect(() => {
+    if (!magic || !magicBurstKey) return undefined;
+    const rafId = requestAnimationFrame(() => replayTrailRef.current());
+    return () => cancelAnimationFrame(rafId);
+  }, [magic, magicBurstKey]);
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return undefined;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    camera.position.set(0, 0, 9.6);
+    let cleanupBlob = () => {};
+    let isDisposed = false;
 
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: "high-performance",
-    });
-    renderer.setClearColor(0x000000, 0);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    mount.appendChild(renderer.domElement);
+    loadThreeBlobModules().then((THREE) => {
+      if (isDisposed || !mount.isConnected) return;
 
-    const blobGroup = new THREE.Group();
-    blobGroup.scale.set(1, 1, 1);
-    scene.add(blobGroup);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
+      camera.position.set(0, 0, 9.6);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.35);
-    scene.add(ambient);
+      const renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setClearColor(0x000000, 0);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      mount.appendChild(renderer.domElement);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.9);
-    keyLight.position.set(-2.8, 3.6, 4.8);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    rimLight.position.set(3.2, 2.4, 3.6);
-    scene.add(rimLight);
-
-    const bodyGeometry = new RoundedBoxGeometry(2.18, 2.18, 2.18, 32, 0.74);
-    const basePositions = bodyGeometry.attributes.position.array.slice();
-    const bodyMaterial = new THREE.ShaderMaterial({
-      vertexShader: blobVertexShader,
-      fragmentShader: blobFragmentShader,
-    });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.scale.set(1, 1, 1);
-    blobGroup.add(body);
-
-    const eyeTexture = createEyeTexture();
-    const eyeMaterial = new THREE.SpriteMaterial({
-      map: eyeTexture,
-      transparent: true,
-      opacity: 0.96,
-      depthWrite: false,
-      depthTest: true,
-      blending: THREE.AdditiveBlending,
-    });
-    const leftEye = new THREE.Sprite(eyeMaterial);
-    leftEye.position.set(-0.39, -0.02, 1.18);
-    leftEye.scale.set(0.38, 0.58, 1);
-    blobGroup.add(leftEye);
-
-    const rightEye = new THREE.Sprite(eyeMaterial);
-    rightEye.position.copy(leftEye.position);
-    rightEye.position.x = 0.39;
-    rightEye.scale.copy(leftEye.scale);
-    blobGroup.add(rightEye);
-
-    const resize = () => {
-      const width = mount.clientWidth || 194;
-      const height = mount.clientHeight || 197;
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-    };
-    resize();
-
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(mount);
-
-    const startTime = performance.now();
-    let spinStart = 0;
-    let nextSpinAt = 1.8;
-    const spinDuration = 1.85;
-    const smooth = (value) => value * value * (3 - 2 * value);
-    const pulseAt = (value, center, width) => Math.max(0, 1 - Math.abs(value - center) / width);
-    let rafId = 0;
-    const animate = () => {
-      const t = (performance.now() - startTime) * 0.001;
-      const positions = bodyGeometry.attributes.position;
-
-      for (let i = 0; i < positions.count; i += 1) {
-        const index = i * 3;
-        const x = basePositions[index];
-        const y = basePositions[index + 1];
-        const z = basePositions[index + 2];
-        const pulse =
-          1 +
-          Math.sin(x * 3.1 + t * 1.35) * 0.01 +
-          Math.sin(y * 4.4 + t * 1.05) * 0.008 +
-          Math.sin(z * 5.3 + t * 1.18) * 0.006;
-
-        positions.setXYZ(i, x * pulse, y * pulse, z * pulse);
-      }
-
-      positions.needsUpdate = true;
-      bodyGeometry.computeVertexNormals();
-
-      if (!spinStart && t >= nextSpinAt) {
-        spinStart = t;
-        setTrailKey((key) => key + 1);
-      }
-
-      let spinProgress = 0;
-      if (spinStart) {
-        spinProgress = Math.min((t - spinStart) / spinDuration, 1);
-
-        if (spinProgress >= 1) {
-          spinStart = 0;
-          nextSpinAt = t + 2.3 + Math.random() * 3.2;
-          spinProgress = 0;
-        }
-      }
-
-      const idleY = Math.sin(t * 1.35) * 0.085;
-      const idleWobble = spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
-      const jumpArc = spinStart ? Math.sin(spinProgress * Math.PI) : 0;
-      const rebound = spinStart ? Math.sin(pulseAt(spinProgress, 0.93, 0.07) * Math.PI) * 0.035 : 0;
-      const jumpY = spinStart ? jumpArc * 0.54 + rebound : 0;
-      const spinTurn = spinStart ? smooth(spinProgress) * Math.PI * 2 : 0;
-
+      const blobGroup = new THREE.Group();
       blobGroup.scale.set(1, 1, 1);
-      const rotationY = spinTurn + idleWobble;
-      const frontVisibility = Math.max(0, Math.cos(rotationY));
-      eyeMaterial.opacity = 0.96 * smooth(Math.min(frontVisibility * 1.35, 1));
+      scene.add(blobGroup);
 
-      blobGroup.rotation.y = rotationY;
-      blobGroup.rotation.x = Math.sin(t * 0.9) * 0.02 - jumpArc * 0.035;
-      blobGroup.position.y = -0.12 + idleY + jumpY;
+      const ambient = new THREE.AmbientLight(0xffffff, 1.35);
+      scene.add(ambient);
 
-      renderer.render(scene, camera);
-      rafId = requestAnimationFrame(animate);
-    };
-    animate();
+      const keyLight = new THREE.DirectionalLight(0xffffff, 1.9);
+      keyLight.position.set(-2.8, 3.6, 4.8);
+      scene.add(keyLight);
+
+      const rimLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      rimLight.position.set(3.2, 2.4, 3.6);
+      scene.add(rimLight);
+
+      const bodyGeometry = createRoundedCubeGeometry(THREE);
+      const basePositions = bodyGeometry.attributes.position.array.slice();
+      const bodyMaterial = new THREE.ShaderMaterial({
+        vertexShader: blobVertexShader,
+        fragmentShader: blobFragmentShader,
+      });
+      const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      body.scale.set(1, 1, 1);
+      blobGroup.add(body);
+
+      const eyeTexture = createEyeTexture(THREE);
+      const eyeMaterial = new THREE.SpriteMaterial({
+        map: eyeTexture,
+        transparent: true,
+        opacity: 0.96,
+        depthWrite: false,
+        depthTest: true,
+        blending: THREE.AdditiveBlending,
+      });
+      const leftEye = new THREE.Sprite(eyeMaterial);
+      leftEye.position.set(-0.39, -0.02, 1.18);
+      leftEye.scale.set(0.38, 0.58, 1);
+      blobGroup.add(leftEye);
+
+      const rightEye = new THREE.Sprite(eyeMaterial);
+      rightEye.position.copy(leftEye.position);
+      rightEye.position.x = 0.39;
+      rightEye.scale.copy(leftEye.scale);
+      blobGroup.add(rightEye);
+
+      const resize = () => {
+        const width = mount.clientWidth || 194;
+        const height = mount.clientHeight || 197;
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      };
+      resize();
+
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(mount);
+
+      const startTime = performance.now();
+      let spinStart = 0;
+      let nextSpinAt = 1.35;
+      const spinDuration = 1.85;
+      const smooth = (value) => value * value * (3 - 2 * value);
+      const pulseAt = (value, center, width) => Math.max(0, 1 - Math.abs(value - center) / width);
+      const replayMagicTrail = () => {
+        const trail = trailRef.current;
+        if (!trail) return;
+
+        trail.classList.remove("home-blob-magic-trail--burst");
+        void trail.offsetWidth;
+        trail.classList.add("home-blob-magic-trail--burst");
+      };
+      replayTrailRef.current = replayMagicTrail;
+      if (magicRef.current && magicBurstKey) {
+        requestAnimationFrame(replayMagicTrail);
+      }
+      let rafId = 0;
+      const animate = () => {
+        const t = (performance.now() - startTime) * 0.001;
+        const positions = bodyGeometry.attributes.position;
+
+        for (let i = 0; i < positions.count; i += 1) {
+          const index = i * 3;
+          const x = basePositions[index];
+          const y = basePositions[index + 1];
+          const z = basePositions[index + 2];
+          const pulse =
+            1 +
+            Math.sin(x * 3.1 + t * 1.35) * 0.01 +
+            Math.sin(y * 4.4 + t * 1.05) * 0.008 +
+            Math.sin(z * 5.3 + t * 1.18) * 0.006;
+
+          positions.setXYZ(i, x * pulse, y * pulse, z * pulse);
+        }
+
+        positions.needsUpdate = true;
+        bodyGeometry.computeVertexNormals();
+
+        if (motion !== "calm" && !spinStart && t >= nextSpinAt) {
+          spinStart = t;
+          if (magicRef.current) replayMagicTrail();
+        }
+
+        let spinProgress = 0;
+        if (spinStart) {
+          spinProgress = Math.min((t - spinStart) / spinDuration, 1);
+
+          if (spinProgress >= 1) {
+            spinStart = 0;
+            nextSpinAt = t + 1.25 + Math.random() * 2.1;
+            spinProgress = 0;
+          }
+        }
+
+        const idleY = Math.sin(t * 1.35) * 0.085;
+        const idleWobble = motion === "calm" ? 0 : spinStart ? 0 : Math.sin(t * 1.05) * 0.018;
+        const jumpArc = spinStart ? Math.sin(spinProgress * Math.PI) : 0;
+        const rebound = spinStart ? Math.sin(pulseAt(spinProgress, 0.93, 0.07) * Math.PI) * 0.035 : 0;
+        const jumpY = spinStart ? jumpArc * 0.72 + rebound : 0;
+        const spinTurn = spinStart ? smooth(spinProgress) * Math.PI * 2 : 0;
+
+        blobGroup.scale.set(1, 1, 1);
+        const rotationY = spinTurn + idleWobble;
+        const frontVisibility = Math.max(0, Math.cos(rotationY));
+        eyeMaterial.opacity = 0.96 * smooth(Math.min(frontVisibility * 1.35, 1));
+
+        blobGroup.rotation.y = rotationY;
+        blobGroup.rotation.x = Math.sin(t * 0.9) * 0.02 - jumpArc * 0.035;
+        blobGroup.position.y = -0.12 + idleY + jumpY;
+
+        renderer.render(scene, camera);
+        rafId = requestAnimationFrame(animate);
+      };
+      animate();
+
+      cleanupBlob = () => {
+        cancelAnimationFrame(rafId);
+        replayTrailRef.current = () => {};
+        resizeObserver.disconnect();
+        if (renderer.domElement.parentNode === mount) {
+          mount.removeChild(renderer.domElement);
+        }
+        bodyGeometry.dispose();
+        bodyMaterial.dispose();
+        eyeTexture.dispose();
+        eyeMaterial.dispose();
+        renderer.dispose();
+      };
+    });
 
     return () => {
-      cancelAnimationFrame(rafId);
-      resizeObserver.disconnect();
-      mount.removeChild(renderer.domElement);
-      bodyGeometry.dispose();
-      bodyMaterial.dispose();
-      eyeTexture.dispose();
-      eyeMaterial.dispose();
-      renderer.dispose();
+      isDisposed = true;
+      cleanupBlob();
     };
   }, []);
 
   return (
     <div
       ref={mountRef}
-      className={`home-blob-3d${className ? ` ${className}` : ""}`}
+      className={`home-blob-3d${magicClass}${className ? ` ${className}` : ""}`}
       role="img"
       aria-label={alt}
     >
-      <span key={trailKey} className="home-blob-magic-trail" aria-hidden="true">
-        {Array.from({ length: 28 }, (_, index) => (
-          <i key={index} />
-        ))}
-      </span>
+      {magic && (
+        <span ref={trailRef} className="home-blob-magic-trail home-blob-magic-trail--burst" aria-hidden="true">
+          {Array.from({ length: 84 }, (_, index) => (
+            <i key={index} style={getMagicSparkStyle(index)} />
+          ))}
+        </span>
+      )}
     </div>
   );
 }
@@ -332,8 +512,18 @@ function SurveyUserBubble({ children, origin }) {
 }
 
 const suggestions = [
-  { icon: imgScience, text: "What is PDRN?", screen: "pdrn" },
-  { icon: imgScienceFilled, text: "What makes REJURAN's PDRN\ndifferent from other brands?", screen: "pdrn2" },
+  {
+    icon: imgScience,
+    text: "What is PDRN?",
+    screen: "pdrn",
+    label: <>What is <strong>PDRN</strong>?</>,
+  },
+  {
+    icon: imgScienceFilled,
+    text: "What makes REJURAN's PDRN\ndifferent from other brands?",
+    screen: "pdrn2",
+    label: <><span className="v2-suggestion-nowrap">What makes <strong>REJURAN's PDRN</strong></span><br />different from other brands?</>,
+  },
 ];
 
 const PDRN_ANSWER =
@@ -343,18 +533,44 @@ const PDRN_DIFF_ANSWER =
   "REJURAN uses pharmaceutical-grade PDRN with a clinically verified molecular weight optimized for skin absorption.\n\nUnlike other brands that use generic DNA extracts, REJURAN's PDRN is standardized through a patented purification process — ensuring consistent potency, safety, and regenerative efficacy in every product.";
 
 /* ── Shared Header ── */
-function Header({ onBack }) {
+function Header({ onBack, onMenu, onChat }) {
+  const headerNav = useContext(HeaderNavContext);
+  const handleMenu = onMenu || headerNav.onMenu;
+  const handleChat = onChat || headerNav.onChat;
+
   return (
-    <header className="v2-header" onClick={onBack} style={{ cursor: onBack ? "pointer" : "default" }}>
-      <img src={imgMenuIcon} alt="menu" className="v2-header-icon-left" />
-      <div className="v2-header-center">
+    <header className="v2-header">
+      <button
+        type="button"
+        className="v2-header-icon-btn v2-header-icon-btn-left"
+        onClick={handleMenu}
+        aria-label="Go to home"
+      >
+        <img src={imgMenuIcon} alt="" className="v2-header-icon-left" />
+      </button>
+      <button
+        type="button"
+        className="v2-header-center"
+        onClick={onBack}
+        style={{ cursor: onBack ? "pointer" : "default" }}
+        aria-label={onBack ? "Go back" : "Current experience"}
+      >
         <div className="v2-title-row">
-          <span className="v2-title">Chat REJURAN 8.1</span>
+          <span className="v2-title">
+            Chat <span className="v2-title-brand">REJURAN</span> 8.1
+          </span>
           <img src="/mdi_expand-more.png" alt="" className="v2-chevron" />
         </div>
         <span className="v2-subtitle">OLIVE YOUNG FESTA 2026</span>
-      </div>
-      <img src={imgChatIcon} alt="chat" className="v2-header-icon-right" />
+      </button>
+      <button
+        type="button"
+        className="v2-header-icon-btn v2-header-icon-btn-right"
+        onClick={handleChat}
+        aria-label="Open PDRN chat"
+      >
+        <img src={imgChatIcon} alt="" className="v2-header-icon-right" />
+      </button>
     </header>
   );
 }
@@ -853,11 +1069,12 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
 }
 
 /* ── Analyzing Screen ── */
-function AnalyzingScreen({ onDone }) {
+function AnalyzingScreen({ onDone, hold = false }) {
   useEffect(() => {
-    const t = setTimeout(onDone, 7600);
+    if (hold) return undefined;
+    const t = setTimeout(onDone, 9400);
     return () => clearTimeout(t);
-  }, [onDone]);
+  }, [hold, onDone]);
 
   return (
     <>
@@ -874,7 +1091,7 @@ function AnalyzingScreen({ onDone }) {
 
       {/* Large centered blob */}
       <div className="v2-analyzing-blob">
-        <BlobMedia alt="REJURAN character" />
+        <BlobMedia alt="REJURAN character" motion="calm" />
       </div>
 
       <div className="v2-loading-card-stage" aria-hidden="true">
@@ -1045,13 +1262,23 @@ function HomeScreen({ onNavigate, onResult }) {
       </div>
 
       <div className="v2-blob-wrap">
-        <HomeBlob3D className="v2-blob" alt="REJURAN character" />
+        <BlobMedia className="v2-blob" alt="REJURAN character" magic />
       </div>
 
       <div className="v2-greeting">
-        <p className="v2-greeting-line v2-greeting-line-1">Hi!</p>
-        <p className="v2-greeting-line v2-greeting-line-2">How's it going?</p>
+        <p className="v2-greeting-line v2-greeting-line-1">Welcome!</p>
+        <p className="v2-greeting-line v2-greeting-line-2">
+          Find your <strong>REJURAN match</strong>
+        </p>
       </div>
+
+      <p className="v2-click-hint">
+        <span className="v2-click-hint-arrow" aria-hidden="true">
+          <span className="v2-click-hint-arrow-left">←</span>
+          <span className="v2-click-hint-arrow-down">↓</span>
+        </span>
+        <span className="v2-click-hint-text">Click here!</span>
+      </p>
 
       <div className="v2-suggestions">
         {suggestions.map((s) => (
@@ -1062,12 +1289,19 @@ function HomeScreen({ onNavigate, onResult }) {
             onClick={() => s.screen && onNavigate(s.screen)}
           >
             <img src={s.icon} alt="" className="v2-suggestion-icon" />
-            <span className="v2-suggestion-text">{s.text}</span>
+            <span className="v2-suggestion-text">{s.label}</span>
           </button>
         ))}
       </div>
 
-      <img src="/bar.png" alt="input bar" className="v2-input-bar-img" />
+      <button
+        type="button"
+        className="v2-input-bar-btn"
+        onClick={() => onNavigate("pdrn")}
+        aria-label="Ask Chat REJURAN"
+      >
+        <img src="/bar.png" alt="" className="v2-input-bar-img" />
+      </button>
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
@@ -1174,6 +1408,7 @@ function ResultScreen({ product, onRestart, onNext }) {
 
             {/* Product image */}
             <div className="rs-product-area">
+              <MagicTrail className="rs-product-magic-trail" />
               <img src={data.image} alt={data.name} className="rs-product-img" />
             </div>
 
@@ -1232,7 +1467,7 @@ function GoodbyeScreen({ onHome }) {
 
       {/* Large centered blob */}
       <div className="gb-blob-wrap">
-        <BlobMedia />
+        <BlobMedia magic="strong" />
       </div>
 
       {/* Text */}
@@ -1250,15 +1485,41 @@ function GoodbyeScreen({ onHome }) {
   );
 }
 
+function NavPage({ type, onBack }) {
+  const isMenu = type === "menu";
+
+  return (
+    <>
+      <InteractiveBackground origin={isMenu ? "menu" : "chat"} />
+      <Header onBack={null} />
+
+      <section className={`v2-nav-page v2-nav-page--${type}`}>
+        <p className="v2-nav-page-kicker">
+          {isMenu ? "Menu" : "Chat"}
+        </p>
+        <h1 className="v2-nav-page-title">
+          {isMenu ? "Explore REJURAN" : "Ask REJURAN"}
+        </h1>
+        <button type="button" className="v2-nav-page-back" onClick={onBack}>
+          Back
+        </button>
+      </section>
+    </>
+  );
+}
+
 /* ── Root ── */
 function AppV2() {
-  const [screen, setScreen] = useState("home");
+  const [screen, setScreen] = useState("analyzing");
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
   const [product, setProduct] = useState("");
   const [viewedPdrnScreens, setViewedPdrnScreens] = useState([]);
   const [skinAnswerOrigin, setSkinAnswerOrigin] = useState(null);
   const [concernAnswerOrigin, setConcernAnswerOrigin] = useState(null);
+  const [sharedMagicBurstKey, setSharedMagicBurstKey] = useState(0);
+  const [isGreatMagicBurst, setIsGreatMagicBurst] = useState(false);
+  const greatMagicTimeoutRef = useRef(null);
   // blobPos trails screen by one frame so the CSS transition always fires
   const [blobPos, setBlobPos] = useState("great");
   const showBlob = screen === "great" || screen === "quiz1";
@@ -1270,25 +1531,76 @@ function AppV2() {
     ));
   }, [screen]);
 
+  useEffect(() => {
+    if (screen !== "great") return;
+    setSharedMagicBurstKey((key) => key + 1);
+  }, [screen]);
+
+  useEffect(() => () => {
+    if (greatMagicTimeoutRef.current) {
+      clearTimeout(greatMagicTimeoutRef.current);
+    }
+  }, []);
+
   const goToQuiz = () => {
-    setScreen("quiz1");
-    // Keep blob at "great" position for one paint, then animate to "quiz1"
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setBlobPos("quiz1"));
-    });
+    if (greatMagicTimeoutRef.current) {
+      clearTimeout(greatMagicTimeoutRef.current);
+    }
+
+    setBlobPos("great");
+    setIsGreatMagicBurst(true);
+    setSharedMagicBurstKey((key) => key + 1);
+    greatMagicTimeoutRef.current = setTimeout(() => {
+      setIsGreatMagicBurst(false);
+      greatMagicTimeoutRef.current = null;
+      setScreen("quiz1");
+      // Keep blob at "great" position for one paint, then animate to "quiz1"
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setBlobPos("quiz1"));
+      });
+    }, GREAT_MAGIC_TRANSITION_MS);
   };
 
   const goBackToGreat = () => {
+    if (greatMagicTimeoutRef.current) {
+      clearTimeout(greatMagicTimeoutRef.current);
+      greatMagicTimeoutRef.current = null;
+    }
+    setIsGreatMagicBurst(false);
     setBlobPos("great");
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setScreen("great"));
     });
   };
 
+  const headerNav = {
+    onMenu: () => {
+      if (greatMagicTimeoutRef.current) {
+        clearTimeout(greatMagicTimeoutRef.current);
+        greatMagicTimeoutRef.current = null;
+      }
+      setIsGreatMagicBurst(false);
+      setBlobPos("great");
+      setScreen("menu");
+    },
+    onChat: () => {
+      if (greatMagicTimeoutRef.current) {
+        clearTimeout(greatMagicTimeoutRef.current);
+        greatMagicTimeoutRef.current = null;
+      }
+      setIsGreatMagicBurst(false);
+      setBlobPos("great");
+      setScreen("chat-hub");
+    },
+  };
+
   return (
     <main className="app app-v2">
+      <HeaderNavContext.Provider value={headerNav}>
       <div className="portrait-layout">
         {screen === "home"  && <HomeScreen onNavigate={setScreen} onResult={(p) => { setProduct(p); setScreen("result"); }} />}
+        {screen === "menu" && <NavPage type="menu" onBack={() => setScreen("home")} />}
+        {screen === "chat-hub" && <NavPage type="chat" onBack={() => setScreen("home")} />}
         {screen === "pdrn"  && (
           <ChatScreen
             variant="pdrn"
@@ -1339,7 +1651,7 @@ function AppV2() {
           />
         )}
         {screen === "analyzing" && (
-          <AnalyzingScreen onDone={() => setScreen("result")} />
+          <AnalyzingScreen hold onDone={() => setScreen("result")} />
         )}
         {screen === "result" && (
           <ResultScreen
@@ -1356,9 +1668,12 @@ function AppV2() {
         {showBlob && (
           <BlobMedia
             className={`v2-shared-blob v2-shared-blob--${blobPos}`}
+            magic={screen === "great" ? (isGreatMagicBurst ? "strong" : true) : false}
+            magicBurstKey={sharedMagicBurstKey}
           />
         )}
       </div>
+      </HeaderNavContext.Provider>
     </main>
   );
 }
