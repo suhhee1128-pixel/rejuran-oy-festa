@@ -1510,7 +1510,7 @@ function NavPage({ type, onBack }) {
 
 /* ── Root ── */
 function AppV2() {
-  const [screen, setScreen] = useState("analyzing");
+  const [screen, setScreen] = useState("home");
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
   const [product, setProduct] = useState("");
@@ -1651,7 +1651,7 @@ function AppV2() {
           />
         )}
         {screen === "analyzing" && (
-          <AnalyzingScreen hold onDone={() => setScreen("result")} />
+          <AnalyzingScreen onDone={() => setScreen("result")} />
         )}
         {screen === "result" && (
           <ResultScreen
