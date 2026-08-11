@@ -688,40 +688,24 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
       {showRecommendation && (
         <div className="v2-chat-recommendation">
-          <div className="v2-chat-recommendation-bubble">
+          <button
+            type="button"
+            className="v2-chat-recommendation-bubble v2-chat-recommendation-bubble--clickable"
+            onClick={() => recommendation.onYes()}
+          >
             <p className="v2-chat-recommendation-copy">Want to explore this too?</p>
-            <p className="v2-chat-recommendation-question">{recommendation.question}</p>
-          </div>
-          {showRecommendationChoices && (
-            <div className="v2-chat-recommendation-actions">
-              <button
-                type="button"
-                className={`v2-chat-choice-btn${recommendationChoice === "yes" ? " v2-chat-choice-selected" : ""}`}
-                onClick={() => setRecommendationChoice("yes")}
-              >
-                <span className="v2-chat-choice-radio" />
-                <span>Yes</span>
-              </button>
-              <button
-                type="button"
-                className={`v2-chat-choice-btn${recommendationChoice === "no" ? " v2-chat-choice-selected" : ""}`}
-                onClick={() => setRecommendationChoice("no")}
-              >
-                <span className="v2-chat-choice-radio" />
-                <span>No</span>
-              </button>
-            </div>
-          )}
+            <p className="v2-chat-recommendation-question">{recommendation.question} →</p>
+          </button>
         </div>
       )}
 
-      {showRecommendationChoices && recommendationChoice && (
-        <button type="button" className="v2-next-btn v2-chat-recommendation-next" onClick={goNextFromRecommendation}>
+      {done && !recommendation && (
+        <button type="button" className="v2-next-btn" onClick={onNext}>
           Next →
         </button>
       )}
 
-      {done && !recommendation && (
+      {showRecommendation && (
         <button type="button" className="v2-next-btn" onClick={onNext}>
           Next →
         </button>
@@ -1272,13 +1256,7 @@ function HomeScreen({ onNavigate, onResult }) {
         </p>
       </div>
 
-      <p className="v2-click-hint">
-        <span className="v2-click-hint-arrow" aria-hidden="true">
-          <span className="v2-click-hint-arrow-left">←</span>
-          <span className="v2-click-hint-arrow-down">↓</span>
-        </span>
-        <span className="v2-click-hint-text">Click here!</span>
-      </p>
+      <p className="v2-suggestions-hint">Choose a question to get started</p>
 
       <div className="v2-suggestions">
         {suggestions.map((s) => (

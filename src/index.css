@@ -1055,6 +1055,18 @@ body {
   }
 }
 
+.v2-suggestions-hint {
+  position: absolute;
+  top: 1124px;
+  left: 112px;
+  margin: 0;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 26px;
+  font-weight: 500;
+  color: #1EA29E;
+  animation: v2-click-hint-blink 1.35s ease-in-out 1.28s infinite;
+}
+
 .v2-suggestions {
   position: absolute;
   top: 1164px;
@@ -1941,6 +1953,16 @@ body {
   border-radius: 42px;
   background: rgba(197, 242, 236, 0.94);
   box-shadow: none;
+}
+
+.v2-chat-recommendation-bubble--clickable {
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  transition: background 0.18s;
+}
+.v2-chat-recommendation-bubble--clickable:hover {
+  background: rgba(166, 232, 222, 0.97);
 }
 
 .v2-chat-recommendation-copy {
