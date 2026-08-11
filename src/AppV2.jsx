@@ -701,7 +701,7 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
       {done && !recommendation && (
         <button type="button" className="v2-next-btn" onClick={onNext}>
-          Start Quiz →
+          Next →
         </button>
       )}
 
