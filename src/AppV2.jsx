@@ -701,13 +701,7 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
       {done && !recommendation && (
         <button type="button" className="v2-next-btn" onClick={onNext}>
-          Next →
-        </button>
-      )}
-
-      {showRecommendation && (
-        <button type="button" className="v2-next-btn" onClick={onNext}>
-          Next →
+          Start Quiz →
         </button>
       )}
 
@@ -867,10 +861,10 @@ const CONCERN_OPTIONS = [
 ];
 
 const CONCERN_RESPONSES = {
-  "Visible pores or excess oil":        "Got it! Your skin needs pore refinement and sebum-balancing care.",
-  "Dullness or uneven texture":         "I see! Your skin is calling for brightening and gentle resurfacing.",
-  "Dryness, tightness or irritation":   "Understood! Your skin barrier needs deep hydration and soothing repair.",
-  "Loss of firmness or elasticity":     "Makes sense! Your skin needs collagen support and lifting care.",
+  "Visible pores or excess oil":        "Pores and oil — totally get it. Let's find what works best for your skin!",
+  "Dullness or uneven texture":         "Dullness can be so frustrating. Let's brighten things up for you!",
+  "Dryness, tightness or irritation":   "Dry and tight skin needs some serious love. Let's find your perfect match!",
+  "Loss of firmness or elasticity":     "Firmness concerns are super common. Let's find what gives your skin that bounce back!",
 };
 
 /* Q2 concern → recommended product */
