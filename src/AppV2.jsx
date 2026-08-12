@@ -714,6 +714,11 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
 /* ── Great Screen ── */
 function GreatScreen({ onOk }) {
+  useEffect(() => {
+    const t = setTimeout(onOk, 3000);
+    return () => clearTimeout(t);
+  }, [onOk]);
+
   return (
     <>
       <InteractiveBackground origin="great" />
@@ -737,10 +742,6 @@ function GreatScreen({ onOk }) {
           perfect match together!
         </p>
       </div>
-
-      <button type="button" className="v2-ok-btn" onClick={onOk}>
-        OK!
-      </button>
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
