@@ -1433,6 +1433,11 @@ function ResultScreen({ product, onRestart, onNext }) {
 
 /* ── Goodbye Screen ── */
 function GoodbyeScreen({ onHome }) {
+  useEffect(() => {
+    const t = setTimeout(onHome, 3000);
+    return () => clearTimeout(t);
+  }, [onHome]);
+
   return (
     <>
       <InteractiveBackground origin="goodbye" />
@@ -1446,9 +1451,6 @@ function GoodbyeScreen({ onHome }) {
       {/* Text */}
       <p className="gb-line1">Thanks for coming!</p>
       <p className="gb-line2">Enjoy!</p>
-
-      {/* Goodbye button */}
-      <button className="gb-btn" onClick={onHome}>Goodbye!</button>
 
       {/* Logo */}
       <div className="v2-logo-wrap">
