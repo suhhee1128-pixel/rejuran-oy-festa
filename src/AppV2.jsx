@@ -527,7 +527,7 @@ const suggestions = [
 ];
 
 const PDRN_ANSWER =
-  "PDRN (Polydeoxyribonucleotide) is a DNA-derived bioactive ingredient extracted from salmon.\n\nIt activates tissue repair, stimulates collagen production, and supports deep skin regeneration — making it the core of REJURAN's science.";
+  "PDRN (Polydeoxyribonucleotide) is a purified mixture of DNA fragments, most commonly derived from salmon through a highly controlled purification process.\n\nIn skincare and aesthetic medicine, PDRN is known for its ability to support the skin's natural repair processes and improve the appearance of damaged or aging skin.";
 
 const PDRN_DIFF_ANSWER =
   "REJURAN uses pharmaceutical-grade PDRN with a clinically verified molecular weight optimized for skin absorption.\n\nUnlike other brands that use generic DNA extracts, REJURAN's PDRN is standardized through a patented purification process — ensuring consistent potency, safety, and regenerative efficacy in every product.";
