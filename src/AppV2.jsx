@@ -656,7 +656,7 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
       <div className="v2-deco v2-deco-left">
         <img src={imgDecoImage} alt="" />
-      </div>
+            </div>
       <div className="v2-deco v2-deco-right">
         <img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} />
       </div>
@@ -688,14 +688,14 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
       {showRecommendation && (
         <div className="v2-chat-recommendation">
-          <button
-            type="button"
+            <button
+              type="button"
             className="v2-chat-recommendation-bubble v2-chat-recommendation-bubble--clickable"
             onClick={() => recommendation.onYes()}
-          >
+            >
             <p className="v2-chat-recommendation-copy">Want to explore this too?</p>
             <p className="v2-chat-recommendation-question">{recommendation.question} →</p>
-          </button>
+            </button>
         </div>
       )}
 
@@ -1006,37 +1006,37 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
               {!q2Done && <span className="v2-cursor" />}
               {q2Done && <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>}
             </span>
-          )}
-        </div>
+              )}
+            </div>
       )}
 
       {/* Concern options */}
       <div className="v2-quiz-grid v2-concern-grid">
         {CONCERN_OPTIONS.map((opt, i) => (
-          <button
+                  <button
             key={opt}
             ref={(node) => { optionRefs.current[opt] = node; }}
-            type="button"
+                    type="button"
             className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
             onClick={() => setSelected(opt)}
-          >
+                  >
             <span className={`v2-quiz-radio${selected === opt ? " v2-quiz-radio-on" : ""}`} />
             <span>{opt}</span>
-          </button>
-        ))}
+                  </button>
+                ))}
       </div>
 
       {visibleOptions >= CONCERN_OPTIONS.length && (
         <div className="v2-quiz-actions">
           <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
-          <button
-            type="button"
+                <button
+                  type="button"
             disabled={!selected}
             className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
             onClick={() => selected && onNext(selected, getCanvasRect(optionRefs.current[selected]))}
-          >
+                >
             Next →
-          </button>
+                </button>
         </div>
       )}
 
@@ -1278,8 +1278,8 @@ function HomeScreen({ onNavigate, onResult }) {
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
-      </div>
-    </section>
+            </div>
+          </section>
   );
 }
 
@@ -1469,12 +1469,20 @@ function NavPage({ type, onBack }) {
       <Header onBack={null} />
 
       <section className={`v2-nav-page v2-nav-page--${type}`}>
-        <p className="v2-nav-page-kicker">
-          {isMenu ? "Menu" : "Chat"}
-        </p>
-        <h1 className="v2-nav-page-title">
-          {isMenu ? "Explore REJURAN" : "Ask REJURAN"}
-        </h1>
+        {isMenu ? (
+          <>
+            <p className="v2-nav-page-kicker">Menu</p>
+            <h1 className="v2-nav-page-title">Explore REJURAN</h1>
+          </>
+        ) : (
+          <>
+            <p className="v2-nav-page-kicker">About</p>
+            <h1 className="v2-nav-page-title">Chat REJURAN 8.1</h1>
+            <p className="v2-nav-page-desc">
+              Chat REJURAN is your personal skin advisor, powered by REJURAN's science. Answer a few quick questions and discover the ampoule made for your skin — right here, right now.
+            </p>
+          </>
+        )}
         <button type="button" className="v2-nav-page-back" onClick={onBack}>
           Back
         </button>
@@ -1486,6 +1494,8 @@ function NavPage({ type, onBack }) {
 /* ── Root ── */
 function AppV2() {
   const [screen, setScreen] = useState("home");
+  const [showAbout, setShowAbout] = useState(false);
+  const [showCollection, setShowCollection] = useState(false);
   const [skinType, setSkinType] = useState("");
   const [concern, setConcern] = useState("");
   const [product, setProduct] = useState("");
@@ -1549,24 +1559,8 @@ function AppV2() {
   };
 
   const headerNav = {
-    onMenu: () => {
-      if (greatMagicTimeoutRef.current) {
-        clearTimeout(greatMagicTimeoutRef.current);
-        greatMagicTimeoutRef.current = null;
-      }
-      setIsGreatMagicBurst(false);
-      setBlobPos("great");
-      setScreen("menu");
-    },
-    onChat: () => {
-      if (greatMagicTimeoutRef.current) {
-        clearTimeout(greatMagicTimeoutRef.current);
-        greatMagicTimeoutRef.current = null;
-      }
-      setIsGreatMagicBurst(false);
-      setBlobPos("great");
-      setScreen("chat-hub");
-    },
+    onMenu: () => { setShowCollection(true); },
+    onChat: () => { setShowAbout(true); },
   };
 
   return (
@@ -1574,8 +1568,35 @@ function AppV2() {
       <HeaderNavContext.Provider value={headerNav}>
       <div className="portrait-layout">
         {screen === "home"  && <HomeScreen onNavigate={setScreen} onResult={(p) => { setProduct(p); setScreen("result"); }} />}
-        {screen === "menu" && <NavPage type="menu" onBack={() => setScreen("home")} />}
-        {screen === "chat-hub" && <NavPage type="chat" onBack={() => setScreen("home")} />}
+        {/* Collection modal */}
+        {showCollection && (
+          <div className="about-overlay" onClick={() => setShowCollection(false)}>
+            <div className="modal-box" onClick={e => e.stopPropagation()}>
+              <button className="about-close-btn" onClick={() => setShowCollection(false)}>✕</button>
+              <p className="v2-nav-page-kicker">Collection</p>
+              <h1 className="v2-nav-page-title">REJURAN Ampoules</h1>
+              <div className="collection-grid">
+                {[1, 2, 3, 4].map((n) => (
+                  <img key={n} src={`/loading-card0${n}.png`} alt="" className="collection-card" />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* About modal */}
+        {showAbout && (
+          <div className="about-overlay" onClick={() => setShowAbout(false)}>
+            <div className="modal-box" onClick={e => e.stopPropagation()}>
+              <button className="about-close-btn" onClick={() => setShowAbout(false)}>✕</button>
+              <p className="v2-nav-page-kicker">About</p>
+              <h1 className="v2-nav-page-title">Chat REJURAN 8.1</h1>
+              <p className="v2-nav-page-desc">
+                Chat REJURAN is your personal skin advisor, powered by REJURAN's science. Answer a few quick questions and discover the ampoule made for your skin — right here, right now.
+              </p>
+            </div>
+          </div>
+        )}
         {screen === "pdrn"  && (
           <ChatScreen
             variant="pdrn"

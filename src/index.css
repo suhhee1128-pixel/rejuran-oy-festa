@@ -894,6 +894,72 @@ body {
   color: #000;
 }
 
+.v2-nav-page-desc {
+  margin: 32px 0 0;
+  font-family: "Pretendard", sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.7);
+  max-width: 800px;
+}
+
+/* ── Modal backdrop ── */
+.about-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Modal box ── */
+.modal-box {
+  position: relative;
+  background: #fff;
+  border-radius: 48px;
+  padding: 80px;
+  width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+}
+
+.about-close-btn {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.15);
+  background: transparent;
+  font-size: 32px;
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Collection modal ── */
+.collection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 16px;
+}
+
+.collection-card {
+  width: 100%;
+  border-radius: 24px;
+  object-fit: contain;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
 .v2-nav-page-back {
   margin-top: 34px;
   min-width: 168px;
