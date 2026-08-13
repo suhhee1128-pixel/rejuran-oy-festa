@@ -512,7 +512,7 @@ const suggestions = [
     icon: imgScienceFilled,
     text: "What makes REJURAN's PDRN\ndifferent from other brands?",
     screen: "pdrn2",
-    label: <><span className="v2-suggestion-nowrap">What makes <strong>REJURAN's PDRN</strong></span><br />different from other brands?</>,
+    label: <><span className="v2-suggestion-nowrap">What makes <strong>REJURAN's PDRN</strong> different</span><br />from other brands?</>,
   },
 ];
 
@@ -660,25 +660,26 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
       )}
 
       {showAnswerBubble && (
-        <div className="v2-bubble v2-bubble-answer v2-chat-answer v2-chat-sequence-in">
-          {paragraphs.slice(0, visibleParagraphs).map((p, i) => (
-            <p key={i} className="v2-chat-paragraph v2-chat-paragraph-in">
-              {p}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {showRecommendation && (
-        <div className="v2-chat-recommendation">
-            <button
-              type="button"
-            className="v2-chat-recommendation-bubble v2-chat-recommendation-bubble--clickable"
-            onClick={() => recommendation.onYes()}
-            >
-            <p className="v2-chat-recommendation-copy">Want to explore this too?</p>
-            <p className="v2-chat-recommendation-question">{recommendation.question} →</p>
-            </button>
+        <div className="v2-chat-answer-stack">
+          <div className="v2-bubble v2-bubble-answer v2-chat-answer v2-chat-sequence-in">
+            {paragraphs.slice(0, visibleParagraphs).map((p, i) => (
+              <p key={i} className="v2-chat-paragraph v2-chat-paragraph-in">
+                {p}
+              </p>
+            ))}
+          </div>
+          {showRecommendation && (
+            <div className="v2-chat-recommendation">
+              <button
+                type="button"
+                className="v2-chat-recommendation-bubble v2-chat-recommendation-bubble--clickable"
+                onClick={() => recommendation.onYes()}
+              >
+                <p className="v2-chat-recommendation-copy">Want to explore this too?</p>
+                <p className="v2-chat-recommendation-question">{recommendation.question} →</p>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -798,28 +799,17 @@ function SkinTypeScreen({ onNext, onBack }) {
             ref={(node) => { optionRefs.current[opt] = node; }}
             type="button"
             className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
-            onClick={() => setSelected(opt)}
+            onClick={() => {
+              if (selected) return;
+              setSelected(opt);
+              window.setTimeout(() => onNext(opt, getCanvasRect(optionRefs.current[opt])), 220);
+            }}
           >
             <span className={`v2-quiz-radio${selected === opt ? " v2-quiz-radio-on" : ""}`} />
             <span>{opt}</span>
           </button>
         ))}
       </div>
-
-      {/* Back / Next — only show when all options visible */}
-      {visibleOptions >= SKIN_OPTIONS.length && (
-        <div className="v2-quiz-actions">
-          <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
-          <button
-            type="button"
-            disabled={!selected}
-            className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
-            onClick={() => selected && onNext(selected, getCanvasRect(optionRefs.current[selected]))}
-          >
-            Next →
-          </button>
-        </div>
-      )}
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
@@ -964,6 +954,7 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
     <>
       <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
+      <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
 
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
@@ -1001,27 +992,17 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
             ref={(node) => { optionRefs.current[opt] = node; }}
                     type="button"
             className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
-            onClick={() => setSelected(opt)}
-                  >
+            onClick={() => {
+              if (selected) return;
+              setSelected(opt);
+              window.setTimeout(() => onNext(opt, getCanvasRect(optionRefs.current[opt])), 220);
+            }}
+          >
             <span className={`v2-quiz-radio${selected === opt ? " v2-quiz-radio-on" : ""}`} />
             <span>{opt}</span>
-                  </button>
-                ))}
+          </button>
+        ))}
       </div>
-
-      {visibleOptions >= CONCERN_OPTIONS.length && (
-        <div className="v2-quiz-actions">
-          <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
-                <button
-                  type="button"
-            disabled={!selected}
-            className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
-            onClick={() => selected && onNext(selected, getCanvasRect(optionRefs.current[selected]))}
-                >
-            Next →
-                </button>
-        </div>
-      )}
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
@@ -1138,6 +1119,7 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
     <>
       <InteractiveBackground chat origin="center" />
       <Header onBack={onBack} />
+      <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
       <div className="v2-deco v2-deco-left"><img src={imgDecoImage} alt="" /></div>
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
       {showFollowupBlob && (
@@ -1173,27 +1155,17 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
             key={opt}
             type="button"
             className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
-            onClick={() => setSelected(opt)}
+            onClick={() => {
+              if (selected) return;
+              setSelected(opt);
+              window.setTimeout(() => onNext(opt), 220);
+            }}
           >
             <span className={`v2-quiz-radio${selected === opt ? " v2-quiz-radio-on" : ""}`} />
             <span>{opt}</span>
           </button>
         ))}
       </div>
-
-      {visibleOptions >= RESULT_OPTIONS.length && (
-        <div className="v2-quiz-actions">
-          <button type="button" className="v2-back-btn" onClick={onBack}>Back</button>
-          <button
-            type="button"
-            disabled={!selected}
-            className={`v2-card-next-btn${selected ? " v2-card-next-btn-active" : ""}`}
-            onClick={() => selected && onNext(selected)}
-          >
-            Next →
-          </button>
-        </div>
-      )}
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />

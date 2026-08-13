@@ -1744,10 +1744,6 @@ body {
   height: 197px;
 }
 
-.v2-chat-screen--pdrn-diff .v2-chat-recommendation {
-  top: 1224px;
-}
-
 .v2-chat-sequence-in {
   opacity: 0;
   transform: translateY(16px);
@@ -1965,31 +1961,53 @@ body {
 /* Next button */
 .v2-next-btn {
   position: absolute;
-  right: calc(var(--v2-safe-x) + 12px);
-  bottom: 255px;
-  background: rgba(30, 162, 158, 0.72);
+  right: calc(var(--v2-safe-x) + 16px);
+  bottom: 340px;
+  background: #1EA29E;
   color: #fff;
   border: none;
-  border-radius: 60px;
-  padding: 28px 56px;
+  border-radius: 52px;
+  padding: 28px 48px;
   font-family: "Pretendard", sans-serif;
   font-weight: 600;
-  font-size: 40px;
+  font-size: 34px;
   cursor: pointer;
   z-index: 3;
-  box-shadow: 0 6px 24px rgba(30, 162, 158, 0.18);
+  box-shadow: 0 8px 32px rgba(30, 162, 158, 0.28);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
-.v2-next-btn:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(30,162,158,0.25); }
+.v2-next-btn:hover  { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(30, 162, 158, 0.34); }
 .v2-next-btn:active { transform: scale(0.97); }
 
-.v2-chat-recommendation {
+.v2-chat-answer-stack {
   position: absolute;
   left: calc(var(--v2-safe-x) + 16px);
   right: 220px;
-  top: 1220px;
+  top: 545px;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.v2-chat-answer-stack .v2-bubble-answer {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  width: 100%;
+}
+
+.v2-chat-recommendation {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  z-index: 3;
+  width: fit-content;
+  max-width: 100%;
   font-family: "Pretendard", sans-serif;
   color: #000;
   opacity: 0;
@@ -2470,12 +2488,12 @@ body {
   position: absolute;
   left: calc(var(--v2-safe-x) + 16px);
   top: 1570px;
-  z-index: 3;
+  z-index: 41;
   background: none;
   border: none;
   font-family: "Pretendard", sans-serif;
   font-weight: 500;
-  font-size: 40px;
+  font-size: 34px;
   color: #8b8b8b;
   cursor: pointer;
 }
@@ -2485,13 +2503,13 @@ body {
   right: calc(var(--v2-safe-x) + 12px);
   bottom: 255px;
   z-index: 3;
-  padding: 28px 56px;
-  border-radius: 60px;
+  padding: 16px 36px;
+  border-radius: 48px;
   border: none;
   background: rgba(190, 207, 205, 0.58);
   font-family: "Pretendard", sans-serif;
   font-weight: 600;
-  font-size: 40px;
+  font-size: 34px;
   color: rgba(255, 255, 255, 0.72);
   cursor: not-allowed;
   box-shadow: none;
