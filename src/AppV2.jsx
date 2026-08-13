@@ -1219,19 +1219,6 @@ function HomeScreen({ onNavigate, onResult }) {
       <InteractiveBackground origin="home" />
       <Header />
 
-      {/* DEV: quick result shortcuts */}
-      <div className="dev-shortcuts">
-        {[
-          ["1", "Turnover Ampoule"],
-          ["2", "Dual Effect Ampoule"],
-          ["3", "Pore Tightening Ampoule"],
-          ["4", "Moisture Treatment Ampoule"],
-        ].map(([label, product]) => (
-          <button key={label} className="dev-shortcut-btn" onClick={() => onResult(product)}>
-            {label}
-          </button>
-        ))}
-      </div>
 
       <div className="v2-blob-wrap">
         <BlobMedia className="v2-blob" alt="REJURAN character" magic />
