@@ -828,7 +828,7 @@ body {
   transform: translateX(-50%);
   font-family: "quiche-sans", "Pretendard", sans-serif;
   font-weight: 400;
-  font-size: 58px;
+  font-size: 68px;
   text-align: center;
   line-height: 1.3;
   color: #000;
@@ -841,7 +841,7 @@ body {
 }
 
 .v2-greeting-line-2 {
-  font-size: 52px;
+  font-size: 56px;
 }
 
 .v2-greeting-line strong {
@@ -939,9 +939,8 @@ body {
 
 .collection-card {
   width: 100%;
-  border-radius: 24px;
   object-fit: contain;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  mix-blend-mode: lighten;
 }
 
 .v2-nav-page-back {
@@ -1107,14 +1106,19 @@ body {
 
 .v2-suggestions-hint {
   position: absolute;
-  top: 1124px;
+  top: 1106px;
   left: 112px;
   margin: 0;
   font-family: 'Pretendard', sans-serif;
   font-size: 26px;
   font-weight: 500;
   color: #1EA29E;
-  animation: v2-click-hint-blink 1.35s ease-in-out 1.28s infinite;
+}
+
+.v2-home-screen .v2-suggestions-hint {
+  opacity: 0;
+  transform: translateY(22px);
+  animation: v2-home-greeting-rise 0.72s cubic-bezier(0.2, 0.76, 0.18, 1) 0.8s both;
 }
 
 .v2-suggestions {
@@ -1124,8 +1128,9 @@ body {
   transform: none;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  max-width: var(--v2-content-width);
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 860px;
   z-index: 2;
 }
 
@@ -1133,11 +1138,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 42px;
+  gap: 24px;
+  box-sizing: border-box;
   width: fit-content;
-  min-height: 112px;
-  padding: 26px 52px 26px 42px;
-  background: rgba(197, 242, 236, 0.94);
+  max-width: 100%;
+  padding: 28px 40px;
+  background: #1EA29E;
   border: none;
   border-radius: 52px;
   cursor: pointer;
@@ -1164,13 +1170,14 @@ body {
   height: 40px;
   flex-shrink: 0;
   margin-top: 0;
+  filter: brightness(0) invert(1);
 }
 
 .v2-suggestion-text {
   font-family: "Pretendard", sans-serif;
   font-weight: 400;
-  font-size: 44px;
-  color: #000;
+  font-size: 34px;
+  color: #fff;
   white-space: normal;
   line-height: 1.15;
 }
@@ -1182,30 +1189,6 @@ body {
 
 .v2-suggestion-nowrap {
   white-space: nowrap;
-}
-
-.v2-suggestion-item:first-child {
-  min-height: 112px;
-  padding-right: 40px;
-}
-
-.v2-suggestion-item:nth-child(2) {
-  align-items: flex-start;
-  box-sizing: border-box;
-  width: fit-content;
-  max-width: var(--v2-content-width);
-  min-height: 164px;
-  padding: 30px 60px 30px 42px;
-}
-
-.v2-suggestion-item:nth-child(2) .v2-suggestion-icon {
-  margin-top: 14px;
-}
-
-.v2-suggestion-item:nth-child(2) .v2-suggestion-text {
-  flex: 1;
-  text-align: left;
-  transform: translateY(6px);
 }
 
 .v2-input-bar-btn {
