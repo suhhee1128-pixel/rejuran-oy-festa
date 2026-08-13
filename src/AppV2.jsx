@@ -627,7 +627,7 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
   useEffect(() => {
     if (!done || !recommendation) return;
-    const t = setTimeout(() => setShowRecommendation(true), 420);
+    const t = setTimeout(() => setShowRecommendation(true), 800);
     return () => clearTimeout(t);
   }, [done, recommendation]);
 
