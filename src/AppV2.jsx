@@ -698,7 +698,7 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 /* ── Great Screen ── */
 function GreatScreen({ onOk }) {
   useEffect(() => {
-    const t = setTimeout(onOk, 3000);
+    const t = setTimeout(onOk, 2000);
     return () => clearTimeout(t);
   }, [onOk]);
 
@@ -832,7 +832,7 @@ const SKIN_RESPONSES = {
   "Normal":      "Great! Even balanced skin benefits from consistent care.",
   "Sensitive":   "Got it! Sensitive skin needs gentle, calming ingredients.",
   "Oily":        "Understood! Oily skin thrives with lightweight, balancing products.",
-  "Combination": "Makes sense! Combination skin needs targeted zone care.",
+  "Combination": "Got it. Combination skin just needs a bit of balance.",
   "Dry":         "Got it! Dry skin craves deep hydration and repair.",
   "Not sure":    "No worries — let's figure out what your skin needs together!",
 };
