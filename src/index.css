@@ -1951,6 +1951,22 @@ body {
   margin: 0;
 }
 
+.v2-chat-paragraph {
+  margin: 0;
+}
+.v2-chat-paragraph + .v2-chat-paragraph {
+  margin-top: 24px;
+}
+
+.v2-chat-paragraph-in {
+  animation: v2-para-fade-in 0.5s ease both;
+}
+
+@keyframes v2-para-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .v2-bubble-typing {
   left: calc(var(--v2-safe-x) + 20px);
   top: 545px;
@@ -2005,7 +2021,7 @@ body {
   position: absolute;
   left: calc(var(--v2-safe-x) + 16px);
   right: 220px;
-  top: 1104px;
+  top: 1220px;
   z-index: 3;
   font-family: "Pretendard", sans-serif;
   color: #000;

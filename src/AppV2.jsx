@@ -577,22 +577,23 @@ function Header({ onBack, onMenu, onChat }) {
 
 /* ── Shared Chat Screen ── */
 function ChatScreen({ question, answer, onBack, onNext, recommendation, variant = "default" }) {
+  const paragraphs = answer.split("\n\n");
   const [showUserBubble, setShowUserBubble] = useState(false);
   const [showBlob, setShowBlob] = useState(false);
   const [showAnswerBubble, setShowAnswerBubble] = useState(false);
   const [phase, setPhase] = useState("loading");
-  const [displayed, setDisplayed] = useState("");
+  const [visibleParagraphs, setVisibleParagraphs] = useState(0);
   const [showRecommendation, setShowRecommendation] = useState(false);
   const [showRecommendationChoices, setShowRecommendationChoices] = useState(false);
   const [recommendationChoice, setRecommendationChoice] = useState("");
-  const done = displayed.length >= answer.length;
+  const done = visibleParagraphs >= paragraphs.length;
 
   useEffect(() => {
     setShowUserBubble(false);
     setShowBlob(false);
     setShowAnswerBubble(false);
     setPhase("loading");
-    setDisplayed("");
+    setVisibleParagraphs(0);
     const userTimer = setTimeout(() => setShowUserBubble(true), 180);
     const blobTimer = setTimeout(() => setShowBlob(true), 520);
     const answerTimer = setTimeout(() => setShowAnswerBubble(true), 860);
@@ -605,21 +606,18 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
   useEffect(() => {
     if (!showAnswerBubble) return;
-    setPhase("loading");
-    setDisplayed("");
-    const t = setTimeout(() => setPhase("typing"), 900);
-    return () => clearTimeout(t);
+    setPhase("typing");
+    setVisibleParagraphs(0);
   }, [showAnswerBubble, question, answer]);
 
   useEffect(() => {
-    if (!showAnswerBubble) return;
     if (phase !== "typing") return;
     if (done) return;
     const t = setTimeout(() => {
-      setDisplayed(answer.slice(0, displayed.length + 1));
-    }, 28);
+      setVisibleParagraphs(v => v + 1);
+    }, visibleParagraphs === 0 ? 0 : 1500);
     return () => clearTimeout(t);
-  }, [showAnswerBubble, phase, displayed, done, answer]);
+  }, [phase, visibleParagraphs, done]);
 
   useEffect(() => {
     setShowRecommendation(false);
@@ -672,18 +670,13 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
       )}
 
       {showAnswerBubble && (
-        phase === "loading" ? (
-          <div className="v2-bubble v2-bubble-typing v2-chat-sequence-in">
-            <span className="v2-dot" />
-            <span className="v2-dot" />
-            <span className="v2-dot" />
-          </div>
-        ) : (
-          <div className="v2-bubble v2-bubble-answer v2-chat-answer v2-chat-sequence-in">
-            {displayed}
-            {!done && <span className="v2-cursor" />}
-          </div>
-        )
+        <div className="v2-bubble v2-bubble-answer v2-chat-answer v2-chat-sequence-in">
+          {paragraphs.slice(0, visibleParagraphs).map((p, i) => (
+            <p key={i} className="v2-chat-paragraph v2-chat-paragraph-in">
+              {p}
+            </p>
+          ))}
+        </div>
       )}
 
       {showRecommendation && (
