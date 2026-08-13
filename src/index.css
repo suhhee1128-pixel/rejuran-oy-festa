@@ -3112,7 +3112,7 @@ body {
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  animation: rs-reveal-opacity 0.5s ease 1.55s both;
+  animation: rs-reveal-opacity 0.5s ease both;
   transition: opacity 0.28s ease;
 }
 
