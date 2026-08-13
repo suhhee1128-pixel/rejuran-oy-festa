@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://use.typekit.net/ewz7ojg.css" />
     <title>REJURAN GPT Booth Experience</title>
+    <script>
+      (function () {
+        function applyBoothScale() {
+          var w = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+          var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          var scale = Math.min(w / 1080, h / 1920);
+          document.documentElement.style.setProperty("--booth-scale", String(scale));
+        }
+        applyBoothScale();
+        window.addEventListener("resize", applyBoothScale);
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener("resize", applyBoothScale);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1508,6 +1508,7 @@ function AppV2() {
   return (
     <main className="app app-v2">
       <HeaderNavContext.Provider value={headerNav}>
+      <div className="portrait-stage">
       <div className="portrait-layout">
         {screen === "home"  && <HomeScreen onNavigate={setScreen} onResult={(p) => { setProduct(p); setScreen("result"); }} />}
         {/* Collection modal */}
@@ -1610,6 +1611,7 @@ function AppV2() {
             magicBurstKey={sharedMagicBurstKey}
           />
         )}
+      </div>
       </div>
       </HeaderNavContext.Provider>
     </main>
