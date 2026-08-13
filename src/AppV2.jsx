@@ -184,17 +184,7 @@ function InteractiveBackground({ chat = false, origin = "home", still = false, s
       style={style}
       aria-hidden="true"
     >
-      {!still && (
-        <>
-          <div className="v2-fluid-sheen" />
-          <div className="v2-wave-field">
-            <span className="v2-idle-wave v2-idle-wave-1" />
-            <span className="v2-idle-wave v2-idle-wave-2" />
-            <span className="v2-idle-wave v2-idle-wave-3" />
-            <span className="v2-idle-wave v2-idle-wave-4" />
-          </div>
-        </>
-      )}
+      {!still && <div className="v2-fluid-sheen" />}
     </div>
   );
 }
