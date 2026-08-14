@@ -2659,13 +2659,13 @@ html, body {
   filter: drop-shadow(0 34px 48px rgba(30, 162, 158, 0.16));
   transform: translateX(-50%) translateY(38px) scale(0.78);
   transform-origin: center center;
-  animation: v2-loading-card-cycle 6.8s cubic-bezier(0.22, 0.76, 0.2, 1) infinite both;
+  animation: v2-loading-card-cycle 6.8s cubic-bezier(0.22, 0.76, 0.2, 1) infinite;
 }
 
-.v2-loading-card-1 { animation-delay: 3s; }
-.v2-loading-card-2 { animation-delay: 1.3s; }
-.v2-loading-card-3 { animation-delay: -0.4s; }
-.v2-loading-card-4 { animation-delay: -2.1s; }
+.v2-loading-card-1 { animation-delay: 0s; }
+.v2-loading-card-2 { animation-delay: -1.7s; }
+.v2-loading-card-3 { animation-delay: -3.4s; }
+.v2-loading-card-4 { animation-delay: -5.1s; }
 
 @keyframes v2-analyzing-blob-arrive {
   0% {
@@ -2819,9 +2819,6 @@ html, body {
   --rs-desc-top: 1040px;
   --rs-desc-width: 931px;
   --rs-desc-font-size: 28px;
-  --rs-lifestyle-top: 1160px;
-  --rs-lifestyle-width: 840px;
-  --rs-lifestyle-max-height: 560px;
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -2853,35 +2850,20 @@ html, body {
   --rs-name-top: 1150px;
   --rs-name-font-size: 58px;
   --rs-desc-top: 1242px;
-  --rs-lifestyle-top: 1602px;
-  --rs-lifestyle-width: 1020px;
-  --rs-lifestyle-max-height: 700px;
-  --rs-scroll-height: 2540px;
 }
 
 .rs-turnover .rs-result-scroll,
 .rs-dual-effect .rs-result-scroll,
 .rs-pore .rs-result-scroll,
 .rs-moisture .rs-result-scroll {
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.rs-turnover .rs-result-scroll::-webkit-scrollbar,
-.rs-dual-effect .rs-result-scroll::-webkit-scrollbar,
-.rs-pore .rs-result-scroll::-webkit-scrollbar,
-.rs-moisture .rs-result-scroll::-webkit-scrollbar {
-  display: none;
+  overflow: hidden;
 }
 
 .rs-turnover .rs-next-btn,
 .rs-dual-effect .rs-next-btn,
 .rs-pore .rs-next-btn,
 .rs-moisture .rs-next-btn {
-  top: 2330px;
+  top: 1520px;
   left: 50%;
   right: auto;
   bottom: auto;
@@ -2894,11 +2876,6 @@ html, body {
   font-weight: 600;
 }
 
-.rs-turnover .rs-next-btn,
-.rs-dual-effect .rs-next-btn {
-  top: 2372px;
-}
-
 .rs-dual-effect {
   --rs-product-top: 480px;
   --rs-product-width: 640px;
@@ -2907,10 +2884,6 @@ html, body {
   --rs-name-top: 1150px;
   --rs-name-font-size: 58px;
   --rs-desc-top: 1242px;
-  --rs-lifestyle-top: 1572px;
-  --rs-lifestyle-width: 1020px;
-  --rs-lifestyle-max-height: 700px;
-  --rs-scroll-height: 2540px;
 }
 
 .rs-moisture .rs-scroll-cue-text {
@@ -2929,14 +2902,6 @@ html, body {
   --rs-name-top: 1120px;
   --rs-name-font-size: 58px;
   --rs-desc-top: 1278px;
-  --rs-lifestyle-top: 1602px;
-  --rs-lifestyle-width: 680px;
-  --rs-lifestyle-max-height: none;
-  --rs-scroll-height: 3040px;
-}
-
-.rs-pore .rs-next-btn {
-  top: 3020px;
 }
 
 .rs-moisture {
@@ -2947,14 +2912,6 @@ html, body {
   --rs-name-top: 1150px;
   --rs-name-font-size: 58px;
   --rs-desc-top: 1300px;
-  --rs-lifestyle-top: 1640px;
-  --rs-lifestyle-width: 680px;
-  --rs-lifestyle-max-height: none;
-  --rs-scroll-height: 3420px;
-}
-
-.rs-moisture .rs-next-btn {
-  top: 3360px;
 }
 
 /* ── blob (small, top-left) ── */
@@ -3158,7 +3115,7 @@ html, body {
 .rs-dual-effect .rs-scroll-cue,
 .rs-pore .rs-scroll-cue,
 .rs-moisture .rs-scroll-cue {
-  display: block;
+  display: none;
 }
 
 .rs-pore .rs-scroll-cue-text {
@@ -3183,28 +3140,6 @@ html, body {
     opacity: 0.92;
     transform: translateX(-50%) translateY(8px);
   }
-}
-
-/* ── Lifestyle image ── */
-.rs-lifestyle-img {
-  position: absolute;
-  top: var(--rs-lifestyle-top);
-  left: 50%;
-  transform: translateX(-50%);
-  width: var(--rs-lifestyle-width);
-  max-height: var(--rs-lifestyle-max-height);
-  object-fit: contain;
-  object-position: top;
-  z-index: 5;
-  opacity: 0;
-  animation: rs-reveal-up-centered 0.66s cubic-bezier(0.2, 0.76, 0.18, 1) 1.28s both;
-}
-
-.rs-turnover .rs-lifestyle-img,
-.rs-dual-effect .rs-lifestyle-img,
-.rs-pore .rs-lifestyle-img,
-.rs-moisture .rs-lifestyle-img {
-  filter: none;
 }
 
 /* ── Result: next arrow button ── */

@@ -1132,7 +1132,6 @@ const PRODUCT_DATA = {
     waveX: "558px",
     waveY: "800px",
     nextLabel: "Next",
-    lifestyle: "/turnover01.png",
   },
   "Dual Effect Ampoule": {
     name: "DUAL EFFECT AMPOULE",
@@ -1146,7 +1145,6 @@ const PRODUCT_DATA = {
     waveX: "564px",
     waveY: "770px",
     nextLabel: "Next",
-    lifestyle: "/dualeffect01.png",
   },
   "Pore Tightening Ampoule": {
     name: "PORE TIGHTENING AMPOULE",
@@ -1161,7 +1159,6 @@ const PRODUCT_DATA = {
     waveX: "572px",
     waveY: "800px",
     nextLabel: "Next",
-    lifestyle: "/pore01-1.png",
   },
   "Moisture Treatment Ampoule": {
     name: "MOISTURE TREATMENT AMPOULE",
@@ -1175,18 +1172,12 @@ const PRODUCT_DATA = {
     waveX: "564px",
     waveY: "800px",
     nextLabel: "Next",
-    lifestyle: "/moisture01-1.png",
   },
 };
 
 /* ── Result Screen ── */
 function ResultScreen({ product, onRestart, onNext }) {
   const data = PRODUCT_DATA[product] || PRODUCT_DATA["Turnover Ampoule"];
-  const [hasScrolledResult, setHasScrolledResult] = useState(false);
-
-  useEffect(() => {
-    setHasScrolledResult(false);
-  }, [product]);
 
   return (
     <>
@@ -1201,10 +1192,7 @@ function ResultScreen({ product, onRestart, onNext }) {
       <section className={`rs-page ${data.resultClass}`}>
         <Header onBack={null} />
 
-        <div
-          className="rs-result-scroll"
-          onScroll={(event) => setHasScrolledResult(event.currentTarget.scrollTop > 1)}
-        >
+        <div className="rs-result-scroll">
           <div className="rs-result-scroll-inner">
             {/* Blob + speech bubble */}
             <div className="rs-blob-clip">
@@ -1243,18 +1231,10 @@ function ResultScreen({ product, onRestart, onNext }) {
                 : data.desc}
             </p>
 
-            {/* Lifestyle image */}
-            <img src={data.lifestyle} alt="" className="rs-lifestyle-img" />
-
             {/* Next arrow button */}
             <button className="rs-next-btn" onClick={onNext}>{data.nextLabel || "›"}</button>
           </div>
         </div>
-
-        <p className={`rs-scroll-cue${hasScrolledResult ? " rs-scroll-cue-hidden" : ""}`}>
-          <span className="rs-scroll-cue-text">Scroll down</span>
-          <span className="rs-scroll-cue-arrow" aria-hidden="true">↓</span>
-        </p>
 
         {/* Logo */}
         <div className="v2-logo-wrap">
