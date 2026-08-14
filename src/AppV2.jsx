@@ -523,21 +523,15 @@ const PDRN_DIFF_ANSWER =
   "REJURAN uses pharmaceutical-grade PDRN with a clinically verified molecular weight optimized for skin absorption.\n\nUnlike other brands that use generic DNA extracts, REJURAN's PDRN is standardized through a patented purification process — ensuring consistent potency, safety, and regenerative efficacy in every product.";
 
 /* ── Shared Header ── */
-function Header({ onBack, onMenu, onChat }) {
+function Header({ onBack, onChat }) {
   const headerNav = useContext(HeaderNavContext);
-  const handleMenu = onMenu || headerNav.onMenu;
   const handleChat = onChat || headerNav.onChat;
 
   return (
     <header className="v2-header">
-      <button
-        type="button"
-        className="v2-header-icon-btn v2-header-icon-btn-left"
-        onClick={handleMenu}
-        aria-label="Go to home"
-      >
+      <div className="v2-header-icon-btn v2-header-icon-btn-left" aria-hidden="true">
         <img src={imgMenuIcon} alt="" className="v2-header-icon-left" />
-      </button>
+      </div>
       <button
         type="button"
         className="v2-header-center"
@@ -655,7 +649,7 @@ function ChatScreen({ question, answer, onBack, onNext, recommendation, variant 
 
       {showBlob && (
         <div className="v2-chat-blob-wrap v2-chat-sequence-in">
-          <BlobMedia alt="REJURAN character" />
+          <BlobMedia alt="REJURAN character" motion="calm" />
         </div>
       )}
 
@@ -741,37 +735,19 @@ const QUIZ_QUESTION = "How would you describe your skin?";
 function SkinTypeScreen({ onNext, onBack }) {
   const [selected, setSelected] = useState(null);
   const [showQuestion, setShowQuestion] = useState(false);
-  const [typedQ, setTypedQ] = useState("");
-  const [visibleOptions, setVisibleOptions] = useState(0);
+  const [showOptions, setShowOptions] = useState(false);
   const optionRefs = useRef({});
 
-  // typing done when full text is displayed
-  const typingDone = typedQ.length >= QUIZ_QUESTION.length;
-
   useEffect(() => {
-    // Step 1: show bubble after blob arrives
     const t1 = setTimeout(() => setShowQuestion(true), 750);
     return () => clearTimeout(t1);
   }, []);
 
-  // Step 2: type question after bubble appears
   useEffect(() => {
     if (!showQuestion) return;
-    if (typingDone) return;
-    const t = setTimeout(() => {
-      setTypedQ(QUIZ_QUESTION.slice(0, typedQ.length + 1));
-    }, 36);
+    const t = setTimeout(() => setShowOptions(true), 300);
     return () => clearTimeout(t);
-  }, [showQuestion, typedQ, typingDone]);
-
-  // Step 3: reveal options one by one after typing done
-  useEffect(() => {
-    if (!typingDone) return;
-    const timers = SKIN_OPTIONS.map((_, i) =>
-      setTimeout(() => setVisibleOptions(i + 1), 300 + i * 140)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [typingDone]);
+  }, [showQuestion]);
 
   return (
     <>
@@ -783,11 +759,8 @@ function SkinTypeScreen({ onNext, onBack }) {
       {/* Question bubble */}
       <div className={`v2-quiz-question${showQuestion ? " v2-quiz-visible" : ""}`}>
         <div className="v2-quiz-q-bubble-wrap">
-          <p className="v2-quiz-q-text">
-            {typedQ}
-            {!typingDone && <span className="v2-cursor" />}
-          </p>
-          {typingDone && <span className="v2-q-hint">SELECT ONLY 1</span>}
+          <p className="v2-quiz-q-text">{QUIZ_QUESTION}</p>
+          {showQuestion && <span className="v2-q-hint">SELECT ONLY 1</span>}
         </div>
       </div>
 
@@ -798,7 +771,7 @@ function SkinTypeScreen({ onNext, onBack }) {
             key={opt}
             ref={(node) => { optionRefs.current[opt] = node; }}
             type="button"
-            className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
+            className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${showOptions ? " v2-quiz-opt-visible" : ""}`}
             onClick={() => {
               if (selected) return;
               setSelected(opt);
@@ -896,17 +869,12 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
 
   const [showFollowupBlob, setShowFollowupBlob] = useState(!answerOrigin);
   const [showFollowupAnswer, setShowFollowupAnswer] = useState(!answerOrigin);
-  const [typedResponse, setTypedResponse] = useState("");
-  const [showQ2, setShowQ2] = useState(false);
-  const [typedQ2, setTypedQ2] = useState("");
-  const [visibleOptions, setVisibleOptions] = useState(0);
-
-  const responseDone = typedResponse.length >= aiResponse.length;
-  const q2Done = typedQ2.length >= QUIZ2_Q.length;
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     setShowFollowupBlob(false);
     setShowFollowupAnswer(false);
+    setShowOptions(false);
     const blobTimer = setTimeout(() => setShowFollowupBlob(true), answerOrigin ? 760 : 0);
     const answerTimer = setTimeout(() => setShowFollowupAnswer(true), answerOrigin ? 1040 : 220);
     return () => {
@@ -915,40 +883,11 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
     };
   }, [answerOrigin, skinType]);
 
-  // Step 1: type AI response immediately on mount
   useEffect(() => {
     if (!showFollowupAnswer) return;
-    if (responseDone) return;
-    const t = setTimeout(() => {
-      setTypedResponse(aiResponse.slice(0, typedResponse.length + 1));
-    }, 36);
+    const t = setTimeout(() => setShowOptions(true), 300);
     return () => clearTimeout(t);
-  }, [showFollowupAnswer, typedResponse, aiResponse, responseDone]);
-
-  // Step 2: after response done, wait 400ms then type Q2
-  useEffect(() => {
-    if (!responseDone) return;
-    const t = setTimeout(() => setShowQ2(true), 400);
-    return () => clearTimeout(t);
-  }, [responseDone]);
-
-  // Step 3: type Q2
-  useEffect(() => {
-    if (!showQ2 || q2Done) return;
-    const t = setTimeout(() => {
-      setTypedQ2(QUIZ2_Q.slice(0, typedQ2.length + 1));
-    }, 36);
-    return () => clearTimeout(t);
-  }, [showQ2, typedQ2, q2Done]);
-
-  // Step 4: show options after Q2 done
-  useEffect(() => {
-    if (!q2Done) return;
-    const timers = CONCERN_OPTIONS.map((_, i) =>
-      setTimeout(() => setVisibleOptions(i + 1), 300 + i * 140)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [q2Done]);
+  }, [showFollowupAnswer]);
 
   return (
     <>
@@ -960,7 +899,7 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
       {showFollowupBlob && (
         <div className="v2-chat-blob-wrap v2-survey-followup-blob v2-followup-content-in">
-          <BlobMedia alt="REJURAN character" />
+          <BlobMedia alt="REJURAN character" motion="calm" />
         </div>
       )}
 
@@ -970,18 +909,12 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
       {/* AI response and next question */}
       {showFollowupAnswer && (
         <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer v2-followup-content-in">
-          <span>
-            {typedResponse}
-            {!responseDone && <span className="v2-cursor" />}
+          <span>{aiResponse}</span>
+          <span className="v2-followup-question">
+            <SplitConcernQuestion text={QUIZ2_Q} />
+            <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>
           </span>
-          {showQ2 && (
-            <span className="v2-followup-question">
-              <SplitConcernQuestion text={typedQ2} />
-              {!q2Done && <span className="v2-cursor" />}
-              {q2Done && <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>}
-            </span>
-              )}
-            </div>
+        </div>
       )}
 
       {/* Concern options */}
@@ -991,7 +924,7 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
             key={opt}
             ref={(node) => { optionRefs.current[opt] = node; }}
                     type="button"
-            className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
+            className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${showOptions ? " v2-quiz-opt-visible" : ""}`}
             onClick={() => {
               if (selected) return;
               setSelected(opt);
@@ -1015,7 +948,7 @@ function Quiz2Screen({ skinType, answerOrigin, onBack, onNext }) {
 function AnalyzingScreen({ onDone, hold = false }) {
   useEffect(() => {
     if (hold) return undefined;
-    const t = setTimeout(onDone, 9400);
+    const t = setTimeout(onDone, 6000);
     return () => clearTimeout(t);
   }, [hold, onDone]);
 
@@ -1025,16 +958,14 @@ function AnalyzingScreen({ onDone, hold = false }) {
 
       <Header onBack={null} />
 
-      {/* 3 animated dots above blob */}
-      <div className="v2-analyzing-dots">
-        <span className="v2-dot" />
-        <span className="v2-dot" />
-        <span className="v2-dot" />
-      </div>
-
       {/* Large centered blob */}
       <div className="v2-analyzing-blob">
         <BlobMedia alt="REJURAN character" motion="calm" />
+      </div>
+
+      <div className="v2-analyzing-text">
+        <p className="v2-analyzing-title">Perfect!</p>
+        <p className="v2-analyzing-body">I’ll find your best match<br />based on your answers.</p>
       </div>
 
       <div className="v2-loading-card-stage" aria-hidden="true">
@@ -1048,12 +979,6 @@ function AnalyzingScreen({ onDone, hold = false }) {
         ))}
       </div>
       <div className="v2-card-wave-focus" aria-hidden="true" />
-
-      {/* Text */}
-      <div className="v2-analyzing-text">
-        <p className="v2-analyzing-title">Perfect!</p>
-        <p className="v2-analyzing-body">I’ll find your best match<br />based on your answers.</p>
-      </div>
 
       <div className="v2-logo-wrap">
         <img src={imgLogo} alt="REJURAN COSMETICS" className="v2-logo" />
@@ -1069,17 +994,12 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
 
   const [showFollowupBlob, setShowFollowupBlob] = useState(!answerOrigin);
   const [showFollowupAnswer, setShowFollowupAnswer] = useState(!answerOrigin);
-  const [typedResponse, setTypedResponse] = useState("");
-  const [showQ3, setShowQ3] = useState(false);
-  const [typedQ3, setTypedQ3] = useState("");
-  const [visibleOptions, setVisibleOptions] = useState(0);
-
-  const responseDone = typedResponse.length >= aiResponse.length;
-  const q3Done = typedQ3.length >= QUIZ3_Q.length;
+  const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
     setShowFollowupBlob(false);
     setShowFollowupAnswer(false);
+    setShowOptions(false);
     const blobTimer = setTimeout(() => setShowFollowupBlob(true), answerOrigin ? 760 : 0);
     const answerTimer = setTimeout(() => setShowFollowupAnswer(true), answerOrigin ? 1040 : 220);
     return () => {
@@ -1090,30 +1010,9 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
 
   useEffect(() => {
     if (!showFollowupAnswer) return;
-    if (responseDone) return;
-    const t = setTimeout(() => setTypedResponse(aiResponse.slice(0, typedResponse.length + 1)), 36);
+    const t = setTimeout(() => setShowOptions(true), 300);
     return () => clearTimeout(t);
-  }, [showFollowupAnswer, typedResponse, aiResponse, responseDone]);
-
-  useEffect(() => {
-    if (!responseDone) return;
-    const t = setTimeout(() => setShowQ3(true), 400);
-    return () => clearTimeout(t);
-  }, [responseDone]);
-
-  useEffect(() => {
-    if (!showQ3 || q3Done) return;
-    const t = setTimeout(() => setTypedQ3(QUIZ3_Q.slice(0, typedQ3.length + 1)), 36);
-    return () => clearTimeout(t);
-  }, [showQ3, typedQ3, q3Done]);
-
-  useEffect(() => {
-    if (!q3Done) return;
-    const timers = RESULT_OPTIONS.map((_, i) =>
-      setTimeout(() => setVisibleOptions(i + 1), 300 + i * 140)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, [q3Done]);
+  }, [showFollowupAnswer]);
 
   return (
     <>
@@ -1124,7 +1023,7 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
       <div className="v2-deco v2-deco-right"><img src={imgDecoImage} alt="" style={{ transform: "scaleX(-1)" }} /></div>
       {showFollowupBlob && (
         <div className="v2-chat-blob-wrap v2-survey-followup-blob v2-followup-content-in">
-          <BlobMedia alt="REJURAN character" />
+          <BlobMedia alt="REJURAN character" motion="calm" />
         </div>
       )}
 
@@ -1134,17 +1033,11 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
       {/* AI response and next question */}
       {showFollowupAnswer && (
         <div className="v2-bubble v2-bubble-answer v2-survey-followup-answer v2-followup-content-in">
-          <span>
-            {typedResponse}
-            {!responseDone && <span className="v2-cursor" />}
+          <span>{aiResponse}</span>
+          <span className="v2-followup-question">
+            <EmphasizedPrefix text={QUIZ3_Q} prefix="What results" />
+            <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>
           </span>
-          {showQ3 && (
-            <span className="v2-followup-question">
-              <EmphasizedPrefix text={typedQ3} prefix="What results" />
-              {!q3Done && <span className="v2-cursor" />}
-              {q3Done && <span className="v2-q-hint v2-followup-q-hint">SELECT ONLY 1</span>}
-            </span>
-          )}
         </div>
       )}
 
@@ -1154,7 +1047,7 @@ function Quiz3Screen({ concern, answerOrigin, onBack, onNext }) {
           <button
             key={opt}
             type="button"
-            className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${visibleOptions > i ? " v2-quiz-opt-visible" : ""}`}
+            className={`v2-quiz-opt${selected === opt ? " v2-quiz-opt-selected" : ""}${showOptions ? " v2-quiz-opt-visible" : ""}`}
             onClick={() => {
               if (selected) return;
               setSelected(opt);
@@ -1323,7 +1216,6 @@ function ResultScreen({ product, onRestart, onNext }) {
 
             {/* Product image */}
             <div className="rs-product-area">
-              <MagicTrail className="rs-product-magic-trail" />
               <img src={data.image} alt={data.name} className="rs-product-img" />
             </div>
 
@@ -1387,7 +1279,7 @@ function GoodbyeScreen({ onHome }) {
 
       {/* Large centered blob */}
       <div className="gb-blob-wrap">
-        <BlobMedia magic="strong" />
+        <BlobMedia />
       </div>
 
       {/* Text */}
@@ -1607,8 +1499,6 @@ function AppV2() {
         {showBlob && (
           <BlobMedia
             className={`v2-shared-blob v2-shared-blob--${blobPos}`}
-            magic={screen === "great" ? (isGreatMagicBurst ? "strong" : true) : false}
-            magicBurstKey={sharedMagicBurstKey}
           />
         )}
       </div>
